@@ -19,7 +19,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_arra
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle as sklearn_shuffle
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, accuracy_score
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, log_loss, , precision_recall_curve
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, log_loss, precision_recall_curve
 from tensorflow.keras.optimizers import Adam
 
 
