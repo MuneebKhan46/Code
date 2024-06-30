@@ -288,17 +288,17 @@ X_test = X_test.reshape((-1, 224, 224, 1))
 ## Without Class Weight
 #########################################################################################################################################################################################################################################
 
-cnn_wcw_model = tf.keras.models.load_model('Code/Models/CNN_Diff_wCW.keras')
+# cnn_wcw_model = tf.keras.models.load_model('Code/Models/CNN_Diff_wCW.keras')
 
 
-test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
-test_acc  = test_acc *100
+# test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
+# test_acc  = test_acc *100
 
-predictions = cnn_wcw_model.predict(X_test)
+# predictions = cnn_wcw_model.predict(X_test)
 
-predicted_labels = predictions[:, 1]
-# predicted_labels = np.argmax(predictions, axis=1)
-true_labels = np.argmax(y_test, axis=-1)
+# # predicted_labels = predictions[:, 1]
+# # predicted_labels = np.argmax(predictions, axis=1)
+# true_labels = np.argmax(y_test, axis=-1)
 
 
 # precision, recall, _ = precision_recall_curve(true_labels, predictions)
@@ -319,7 +319,40 @@ true_labels = np.argmax(y_test, axis=-1)
 # plt.close()
 
 
-precision, recall, _ = precision_recall_curve(true_labels, predicted_labels)
+
+########################
+from sklearn.metrics import precision_recall_curve
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+import tensorflow as tf
+
+# Load the model
+cnn_wcw_model = tf.keras.models.load_model('Code/Models/CNN_Diff_wCW.keras')
+
+# Evaluate the model
+test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
+test_acc  = test_acc * 100
+
+# Make predictions
+predictions = cnn_wcw_model.predict(X_test)
+
+# Check the shape of the predictions
+print("Shape of predictions:", predictions.shape)
+print("Shape of y_test:", y_test.shape)
+
+# Determine if the task is binary or multi-class
+if predictions.shape[1] == 1:
+    # Binary classification case
+    predicted_probabilities = predictions.ravel()  # Flatten to 1D array
+    true_labels = y_test.ravel()
+else:
+    # Multi-class classification case
+    predicted_probabilities = predictions  # Use raw predictions for each class
+    true_labels = np.argmax(y_test, axis=-1)
+
+# Calculate precision and recall
+precision, recall, _ = precision_recall_curve(true_labels, predicted_probabilities)
 
 # Plot the Precision-Recall Curve
 plt.figure()
@@ -335,6 +368,13 @@ if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
 
 plt.savefig(precision_recall_curve_path, dpi=300)
 plt.close()
+################################
+
+
+
+
+
+
 
 
 
