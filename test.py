@@ -378,9 +378,9 @@ plt.close()
 
 
 
-report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+report = classification_report(true_labels, predicted_probabilities, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
 
-conf_matrix = confusion_matrix(true_labels, predicted_labels)
+conf_matrix = confusion_matrix(true_labels, predicted_probabilities)
 TN = conf_matrix[0, 0]
 FP = conf_matrix[0, 1]
 FN = conf_matrix[1, 0]
@@ -417,7 +417,7 @@ weighted_recall    = weighted_recall*100
 model_name = "CNN"
 feature_name = "Difference Map"
 technique = "Without Class Weight"
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
 
 class_1_precision = report['Ghosting Artifact']['precision']
