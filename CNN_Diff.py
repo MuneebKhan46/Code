@@ -462,7 +462,7 @@ predictions = cnn_cw_model.predict(X_test)
 predicted_labels = (predictions > 0.5).astype(int).ravel()
 true_labels = y_test.ravel()  
 
-precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel()
+precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
 
 plt.figure()
 plt.plot(recall, precision, linestyle='-', color='g')
