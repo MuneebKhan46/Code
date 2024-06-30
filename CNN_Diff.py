@@ -372,7 +372,7 @@ predicted_labels = np.argmax(predictions, axis=1)
 true_labels = np.argmax(y_test, axis=-1)
 
 
-precision, recall, _ = precision_recall_curve(true_labels, predictions[:, 1])
+precision, recall, _ = precision_recall_curve(true_labels, predictions)
 
 plt.figure()
 plt.plot(recall, precision, linestyle='-', color='b')
@@ -448,7 +448,7 @@ predictions = cnn_cw_model.predict(X_test)
 predicted_labels = np.argmax(predictions, axis=1)
 true_labels = np.argmax(y_test, axis=-1)
 
-precision, recall, _ = precision_recall_curve(true_labels, predictions[:, 1])
+precision, recall, _ = precision_recall_curve(true_labels, predictions)
 
 plt.figure()
 plt.plot(recall, precision, linestyle='-', color='g')
@@ -527,7 +527,7 @@ predicted_labels = np.argmax(predictions, axis=1)
 true_labels = np.argmax(y_test, axis=-1)
 
 
-precision, recall, _ = precision_recall_curve(true_labels, predictions[:, 1])
+precision, recall, _ = precision_recall_curve(true_labels, predictions)
 
 plt.figure()
 plt.plot(recall, precision, linestyle='-', color='y')
