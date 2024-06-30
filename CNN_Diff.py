@@ -2,6 +2,8 @@ import tensorflow as tf
 import numpy as np
 import os
 from os import path
+CUDA_VISIBLE_DEVICES="0" 
+
 import csv
 # import cv2
 import textwrap
