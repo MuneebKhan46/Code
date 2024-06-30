@@ -12,6 +12,7 @@ from tensorflow.keras.regularizers import l1
 from tensorflow import keras
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import plot_model
+import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization, concatenate
 from keras.callbacks import ModelCheckpoint
@@ -30,6 +31,9 @@ original_dir = '/Dataset/dataset_patch_raw_ver3/original'
 denoised_dir = '/Dataset/dataset_patch_raw_ver3/denoised'
 csv_path     = '/Dataset/dataset_patch_raw_ver3/patch_label_median_verified3.csv'
 result_file_path = "/Code/Results/Overall_result.csv"
+
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 def extract_y_channel_from_yuv_with_patch_numbers(yuv_file_path: str, width: int, height: int):
     y_size = width * height
@@ -60,6 +64,8 @@ def extract_y_channel_from_yuv_with_patch_numbers(yuv_file_path: str, width: int
 
     return patches, patch_numbers
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 def load_data_from_csv(csv_path, original_dir, denoised_dir):
     df = pd.read_csv(csv_path)
@@ -95,16 +101,22 @@ def load_data_from_csv(csv_path, original_dir, denoised_dir):
 
     return all_original_patches, all_denoised_patches, all_scores, denoised_image_names, all_patch_numbers
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 def calculate_difference(original, ghosting):
     return [ghost.astype(np.int16) - orig.astype(np.int16) for orig, ghost in zip(original, ghosting)]
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 def prepare_data(data, labels):
     data = np.array(data).astype('float32') / 255.0
     lbl = np.array(labels)
     return data, lbl
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 def save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path):
     
@@ -142,6 +154,8 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
     
     df_metrics.to_csv(result_file_path, index=False)
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 def augmented_images(data, num_augmented_images_per_original):
     augmented_images = []
@@ -167,6 +181,8 @@ def augmented_images(data, num_augmented_images_per_original):
             augmented_images.append(augmented_image)
     return augmented_images
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 def create_cnn_model(input_shape=(224,224, 1)):
     model = Sequential()
@@ -208,14 +224,14 @@ num_non_ghosting_artifacts = len(non_ghosting_artifacts)
 print(f" Total GA Patches: {num_ghosting_artifacts}")
 print(f" Total NGA Labels: {num_non_ghosting_artifacts}")
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
+
 num_test_ghosting = 1500
 num_test_non_ghosting = 1500
 
-
 num_train_ghosting = num_ghosting_artifacts - num_test_ghosting
 num_train_non_ghosting = num_non_ghosting_artifacts - num_test_non_ghosting
-
-
 
 train_ghosting = ghosting_artifacts[num_test_ghosting:]
 test_ghosting = ghosting_artifacts[:num_test_ghosting]
@@ -223,13 +239,11 @@ test_ghosting = ghosting_artifacts[:num_test_ghosting]
 train_non_ghosting = non_ghosting_artifacts[num_test_non_ghosting:]
 test_non_ghosting = non_ghosting_artifacts[:num_test_non_ghosting]
 
-
 train_dataset = train_ghosting + train_non_ghosting
 test_dataset = test_ghosting + test_non_ghosting
 
 train_patches, train_labels, train_image_names, train_patch_numbers = zip(*train_dataset)
 test_patches, test_labels, test_image_names, test_patch_numbers = zip(*test_dataset)
-
 
 train_patches = np.array(train_patches)
 train_labels = np.array(train_labels)
@@ -242,6 +256,9 @@ test_labels = np.array(test_labels)
 
 print(f" Total Test Patches: {len(test_patches)}")
 print(f" Total Test Labels: {len(test_labels)}")
+
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 ghosting_patches = train_patches[train_labels == 1]
 
@@ -277,6 +294,7 @@ print(f"y_Val Shape: {y_val.shape}")
 print(f"X_Test Shape: {X_test.shape}")
 print(f"y_Test Shape: {y_test.shape}")
 
+
 #########################################################################################################################################################################################################################################
 # Without Class Weight
 #########################################################################################################################################################################################################################################
@@ -286,8 +304,8 @@ cnn_wcw_model = create_cnn_model()
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=1, restore_best_weights=True)
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Weight
@@ -310,9 +328,9 @@ cnn_cw_model = create_cnn_model()
 cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 cw_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=1, restore_best_weights=True)
 
-cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
+cw_history = cnn_cw_model.fit(X_train, y_train, epochs=5, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Balance
@@ -349,9 +367,9 @@ cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accura
 
 
 cb_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=1, restore_best_weights=True)
 
-cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=20, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=5, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -365,21 +383,20 @@ X_test = X_test.reshape((-1, 224, 224, 1))
 #########################################################################################################################################################################################################################################
 
 test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
-test_acc  = test_acc *100
+test_acc  = test_acc * 100
 
 predictions = cnn_wcw_model.predict(X_test)
-predicted_labels = np.argmax(predictions, axis=1)
-true_labels = np.argmax(y_test, axis=-1)
 
+predicted_labels = (predictions > 0.5).astype(int).ravel()
+true_labels = y_test.ravel()  
 
-precision, recall, _ = precision_recall_curve(true_labels, predictions)
+precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
 
 plt.figure()
 plt.plot(recall, precision, linestyle='-', color='b')
 plt.xlabel('Recall')
 plt.ylabel('Precision')
 plt.title('Precision-Recall Curve')
-plt.legend()
 plt.grid(True)
 precision_recall_curve_path = '/Code/Plots/CNN_Diff_wCW_precision_recall_curve.png'
 
@@ -389,7 +406,6 @@ if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
 plt.savefig(precision_recall_curve_path, dpi=300)
 plt.close()
 
-
 report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
 
 conf_matrix = confusion_matrix(true_labels, predicted_labels)
@@ -398,33 +414,30 @@ FP = conf_matrix[0, 1]
 FN = conf_matrix[1, 0]
 TP = conf_matrix[1, 1]
 
+
 total_class_0 = TN + FP
 total_class_1 = TP + FN
-correctly_predicted_0 = TN
-correctly_predicted_1 = TP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-
-accuracy_0 = (TN / total_class_0) * 100
-accuracy_1 = (TP / total_class_1) * 100
 
 precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
 recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
 precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
 recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
 
-
-weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
-weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
+total_samples = total_class_0 + total_class_1
+weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
+weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
 
 if weighted_precision + weighted_recall > 0:
     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
 else:
     weighted_f1_score = 0
 
-weighted_f1_score  = weighted_f1_score*100
-weighted_precision = weighted_precision*100
-weighted_recall    = weighted_recall*100
-
+weighted_f1_score *= 100
+weighted_precision *= 100
+weighted_recall *= 100
 
 model_name = "CNN"
 feature_name = "Difference Map"
@@ -445,10 +458,11 @@ test_loss, test_acc = cnn_cw_model.evaluate(X_test, y_test)
 test_acc  = test_acc *100
 
 predictions = cnn_cw_model.predict(X_test)
-predicted_labels = np.argmax(predictions, axis=1)
-true_labels = np.argmax(y_test, axis=-1)
 
-precision, recall, _ = precision_recall_curve(true_labels, predictions)
+predicted_labels = (predictions > 0.5).astype(int).ravel()
+true_labels = y_test.ravel()  
+
+precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel()
 
 plt.figure()
 plt.plot(recall, precision, linestyle='-', color='g')
@@ -474,32 +488,30 @@ FP = conf_matrix[0, 1]
 FN = conf_matrix[1, 0]
 TP = conf_matrix[1, 1]
 
+
 total_class_0 = TN + FP
 total_class_1 = TP + FN
-correctly_predicted_0 = TN
-correctly_predicted_1 = TP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-
-accuracy_0 = (TN / total_class_0) * 100
-accuracy_1 = (TP / total_class_1) * 100
 
 precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
 recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
 precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
 recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
 
-
-weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
-weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
+total_samples = total_class_0 + total_class_1
+weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
+weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
 
 if weighted_precision + weighted_recall > 0:
     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
 else:
     weighted_f1_score = 0
 
-weighted_f1_score  = weighted_f1_score*100
-weighted_precision = weighted_precision*100
-weighted_recall    = weighted_recall*100
+weighted_f1_score *= 100
+weighted_precision *= 100
+weighted_recall *= 100
 
 
 model_name = "CNN"
@@ -523,12 +535,10 @@ test_loss, test_acc = cnn_cb_model.evaluate(X_test, y_test)
 test_acc  = test_acc *100
 
 predictions = cnn_cb_model.predict(X_test)
-predicted_labels = np.argmax(predictions, axis=1)
-true_labels = np.argmax(y_test, axis=-1)
+predicted_labels = (predictions > 0.5).astype(int).ravel()
+true_labels = y_test.ravel()  
 
-
-precision, recall, _ = precision_recall_curve(true_labels, predictions)
-
+precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
 plt.figure()
 plt.plot(recall, precision, linestyle='-', color='y')
 plt.xlabel('Recall')
@@ -556,30 +566,27 @@ TP = conf_matrix[1, 1]
 
 total_class_0 = TN + FP
 total_class_1 = TP + FN
-correctly_predicted_0 = TN
-correctly_predicted_1 = TP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-
-accuracy_0 = (TN / total_class_0) * 100
-accuracy_1 = (TP / total_class_1) * 100
 
 precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
 recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
 precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
 recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
 
-
-weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
-weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
+total_samples = total_class_0 + total_class_1
+weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
+weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
 
 if weighted_precision + weighted_recall > 0:
     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
 else:
     weighted_f1_score = 0
 
-weighted_f1_score  = weighted_f1_score*100
-weighted_precision = weighted_precision*100
-weighted_recall    = weighted_recall*100
+weighted_f1_score *= 100
+weighted_precision *= 100
+weighted_recall *= 100
 
 
 model_name = "CNN"
