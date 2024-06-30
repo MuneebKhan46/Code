@@ -295,18 +295,38 @@ test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
 test_acc  = test_acc *100
 
 predictions = cnn_wcw_model.predict(X_test)
-predicted_labels = np.argmax(predictions, axis=1)
+
+predicted_labels = predictions[:, 1]
+# predicted_labels = np.argmax(predictions, axis=1)
 true_labels = np.argmax(y_test, axis=-1)
 
 
-precision, recall, _ = precision_recall_curve(true_labels, predictions)
+# precision, recall, _ = precision_recall_curve(true_labels, predictions)
 
+# plt.figure()
+# plt.plot(recall, precision, linestyle='-', color='b')
+# plt.xlabel('Recall')
+# plt.ylabel('Precision')
+# plt.title('Precision-Recall Curve')
+# plt.legend()
+# plt.grid(True)
+# precision_recall_curve_path = '/Code/Plots/CNN_Diff_wCW_precision_recall_curve.png'
+
+# if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
+#     os.makedirs(os.path.dirname(precision_recall_curve_path))
+
+# plt.savefig(precision_recall_curve_path, dpi=300)
+# plt.close()
+
+
+precision, recall, _ = precision_recall_curve(true_labels, predicted_labels)
+
+# Plot the Precision-Recall Curve
 plt.figure()
 plt.plot(recall, precision, linestyle='-', color='b')
 plt.xlabel('Recall')
 plt.ylabel('Precision')
 plt.title('Precision-Recall Curve')
-plt.legend()
 plt.grid(True)
 precision_recall_curve_path = '/Code/Plots/CNN_Diff_wCW_precision_recall_curve.png'
 
@@ -315,6 +335,7 @@ if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
 
 plt.savefig(precision_recall_curve_path, dpi=300)
 plt.close()
+
 
 
 report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
