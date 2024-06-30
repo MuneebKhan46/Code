@@ -298,81 +298,78 @@ print(f"y_Test Shape: {y_test.shape}")
 #########################################################################################################################################################################################################################################
 # Without Class Weight
 #########################################################################################################################################################################################################################################
-strategy = tf.distribute.MirroredStrategy()
 
-
-with strategy.scope():
-    opt = Adam(learning_rate=2e-05)
-    cnn_wcw_model = create_cnn_model()
-    cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+opt = Adam(learning_rate=2e-05)
+cnn_wcw_model = create_cnn_model()
+cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
-    wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-    wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-    wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Weight
 #########################################################################################################################################################################################################################################
 
-# ng = len(train_patches[train_labels == 0])
-# ga =  len(train_patches[train_labels == 1])
-# total = ng + ga
+ng = len(train_patches[train_labels == 0])
+ga =  len(train_patches[train_labels == 1])
+total = ng + ga
 
-# imbalance_ratio = ng / ga  
-# weight_for_0 = (1 / ng) * (total / 2.0)
-# weight_for_1 = (1 / ga) * (total / 2.0)
-# class_weight = {0: weight_for_0, 1: weight_for_1}
+imbalance_ratio = ng / ga  
+weight_for_0 = (1 / ng) * (total / 2.0)
+weight_for_1 = (1 / ga) * (total / 2.0)
+class_weight = {0: weight_for_0, 1: weight_for_1}
 
-# print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
-# print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
+print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
+print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
 
-# opt = Adam(learning_rate=2e-05)
-# cnn_cw_model = create_cnn_model()
-# cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+opt = Adam(learning_rate=2e-05)
+cnn_cw_model = create_cnn_model()
+cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-# cw_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-# cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+cw_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
-# cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
+cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Balance
 #########################################################################################################################################################################################################################################
  
-# combined = list(zip(CX_train, Cy_train))
-# combined = sklearn_shuffle(combined)
+combined = list(zip(CX_train, Cy_train))
+combined = sklearn_shuffle(combined)
 
-# ghosting_artifacts = [item for item in combined if item[1] == 1]
-# non_ghosting_artifacts = [item for item in combined if item[1] == 0]
+ghosting_artifacts = [item for item in combined if item[1] == 1]
+non_ghosting_artifacts = [item for item in combined if item[1] == 0]
 
-# print(f"Ghosting Artifacts: {len(ghosting_artifacts)}")
-# print(f"Non Ghosting Artifacts: {len(non_ghosting_artifacts)}")
+print(f"Ghosting Artifacts: {len(ghosting_artifacts)}")
+print(f"Non Ghosting Artifacts: {len(non_ghosting_artifacts)}")
 
-# num_ghosting_artifacts = len(ghosting_artifacts)
-
-
-# train_val_ghosting = ghosting_artifacts[:num_ghosting_artifacts]
-# train_val_non_ghosting = non_ghosting_artifacts[:num_ghosting_artifacts]
-
-# cb_train_dataset = train_val_ghosting + train_val_non_ghosting
-# print(f"Class balance train size {len(cb_train_dataset)}")
-
-# cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
-
-# cb_train_patches = np.array(cb_train_patches)
-# cb_train_labels = np.array(cb_train_labels)
-
-# # cb_train_labels = keras.utils.to_categorical(cb_train_labels, 2)
-
-# opt = Adam(learning_rate=2e-05)
-# cnn_cb_model = create_cnn_model()
-# cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+num_ghosting_artifacts = len(ghosting_artifacts)
 
 
-# cb_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-# cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+train_val_ghosting = ghosting_artifacts[:num_ghosting_artifacts]
+train_val_non_ghosting = non_ghosting_artifacts[:num_ghosting_artifacts]
 
-# cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+cb_train_dataset = train_val_ghosting + train_val_non_ghosting
+print(f"Class balance train size {len(cb_train_dataset)}")
+
+cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
+
+cb_train_patches = np.array(cb_train_patches)
+cb_train_labels = np.array(cb_train_labels)
+
+# cb_train_labels = keras.utils.to_categorical(cb_train_labels, 2)
+
+opt = Adam(learning_rate=2e-05)
+cnn_cb_model = create_cnn_model()
+cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+
+
+cb_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+
+cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -457,305 +454,305 @@ class_1_accuracies.append(class_1_precision)
 ## With Class Weight
 #########################################################################################################################################################################################################################################
 
-# test_loss, test_acc = cnn_cw_model.evaluate(X_test, y_test)
-# test_acc  = test_acc *100
+test_loss, test_acc = cnn_cw_model.evaluate(X_test, y_test)
+test_acc  = test_acc *100
 
-# predictions = cnn_cw_model.predict(X_test)
+predictions = cnn_cw_model.predict(X_test)
 
-# predicted_labels = (predictions > 0.5).astype(int).ravel()
-# true_labels = y_test.ravel()  
+predicted_labels = (predictions > 0.5).astype(int).ravel()
+true_labels = y_test.ravel()  
 
-# precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
+precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
 
-# plt.figure()
-# plt.plot(recall, precision, linestyle='-', color='g')
-# plt.xlabel('Recall')
-# plt.ylabel('Precision')
-# plt.title('Precision-Recall Curve')
-# plt.legend()
-# plt.grid(True)
-# precision_recall_curve_path = '/Code/Plots/CNN_Diff_CW_precision_recall_curve.png'
+plt.figure()
+plt.plot(recall, precision, linestyle='-', color='g')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.legend()
+plt.grid(True)
+precision_recall_curve_path = '/Code/Plots/CNN_Diff_CW_precision_recall_curve.png'
 
-# if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
-#     os.makedirs(os.path.dirname(precision_recall_curve_path))
+if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
+    os.makedirs(os.path.dirname(precision_recall_curve_path))
 
-# plt.savefig(precision_recall_curve_path, dpi=300)
-# plt.close()
-
-
-# report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
-
-# conf_matrix = confusion_matrix(true_labels, predicted_labels)
-# TN = conf_matrix[0, 0]
-# FP = conf_matrix[0, 1]
-# FN = conf_matrix[1, 0]
-# TP = conf_matrix[1, 1]
+plt.savefig(precision_recall_curve_path, dpi=300)
+plt.close()
 
 
-# total_class_0 = TN + FP
-# total_class_1 = TP + FN
-# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+
+conf_matrix = confusion_matrix(true_labels, predicted_labels)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
 
 
-# precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-# recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-# precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-# recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
-
-# total_samples = total_class_0 + total_class_1
-# weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
-# weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
-
-# if weighted_precision + weighted_recall > 0:
-#     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-# else:
-#     weighted_f1_score = 0
-
-# weighted_f1_score *= 100
-# weighted_precision *= 100
-# weighted_recall *= 100
+total_class_0 = TN + FP
+total_class_1 = TP + FN
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
 
-# model_name = "CNN"
-# feature_name = "Difference Map"
-# technique = "Class Weight"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
-# print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
+precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+
+total_samples = total_class_0 + total_class_1
+weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
+weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
+
+if weighted_precision + weighted_recall > 0:
+    weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+else:
+    weighted_f1_score = 0
+
+weighted_f1_score *= 100
+weighted_precision *= 100
+weighted_recall *= 100
 
 
-# class_1_precision = report['Ghosting Artifact']['precision']
-# models.append(cnn_cw_model)
-# class_1_accuracies.append(class_1_precision)
+model_name = "CNN"
+feature_name = "Difference Map"
+technique = "Class Weight"
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
+
+
+class_1_precision = report['Ghosting Artifact']['precision']
+models.append(cnn_cw_model)
+class_1_accuracies.append(class_1_precision)
 
 
 
-# #########################################################################################################################################################################################################################################
-# ## With Class Balance
-# #########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
+## With Class Balance
+#########################################################################################################################################################################################################################################
 
-# test_loss, test_acc = cnn_cb_model.evaluate(X_test, y_test)
-# test_acc  = test_acc *100
+test_loss, test_acc = cnn_cb_model.evaluate(X_test, y_test)
+test_acc  = test_acc *100
 
-# predictions = cnn_cb_model.predict(X_test)
-# predicted_labels = (predictions > 0.5).astype(int).ravel()
-# true_labels = y_test.ravel()  
+predictions = cnn_cb_model.predict(X_test)
+predicted_labels = (predictions > 0.5).astype(int).ravel()
+true_labels = y_test.ravel()  
 
-# precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
-# plt.figure()
-# plt.plot(recall, precision, linestyle='-', color='y')
-# plt.xlabel('Recall')
-# plt.ylabel('Precision')
-# plt.title('Precision-Recall Curve')
-# plt.legend()
-# plt.grid(True)
-# precision_recall_curve_path = '/Code/Plots/CNN_Diff_CB_precision_recall_curve.png'
+precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
+plt.figure()
+plt.plot(recall, precision, linestyle='-', color='y')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.legend()
+plt.grid(True)
+precision_recall_curve_path = '/Code/Plots/CNN_Diff_CB_precision_recall_curve.png'
 
-# if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
-#     os.makedirs(os.path.dirname(precision_recall_curve_path))
+if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
+    os.makedirs(os.path.dirname(precision_recall_curve_path))
 
-# plt.savefig(precision_recall_curve_path, dpi=300)
-# plt.close()
-
-
-# report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
-
-# conf_matrix = confusion_matrix(true_labels, predicted_labels)
-# TN = conf_matrix[0, 0]
-# FP = conf_matrix[0, 1]
-# FN = conf_matrix[1, 0]
-# TP = conf_matrix[1, 1]
+plt.savefig(precision_recall_curve_path, dpi=300)
+plt.close()
 
 
-# total_class_0 = TN + FP
-# total_class_1 = TP + FN
-# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+
+conf_matrix = confusion_matrix(true_labels, predicted_labels)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
 
 
-# precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-# recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-# precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-# recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
-
-# total_samples = total_class_0 + total_class_1
-# weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
-# weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
-
-# if weighted_precision + weighted_recall > 0:
-#     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-# else:
-#     weighted_f1_score = 0
-
-# weighted_f1_score *= 100
-# weighted_precision *= 100
-# weighted_recall *= 100
+total_class_0 = TN + FP
+total_class_1 = TP + FN
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
 
-# model_name = "CNN"
-# feature_name = "Difference Map"
-# technique = "Class Balance"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
-# print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
+precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
 
-# class_1_precision = report['Ghosting Artifact']['precision']
-# models.append(cnn_cw_model)
-# class_1_accuracies.append(class_1_precision)
+total_samples = total_class_0 + total_class_1
+weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
+weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
 
+if weighted_precision + weighted_recall > 0:
+    weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+else:
+    weighted_f1_score = 0
 
-# #########################################################################################################################################################################################################################################
-# ## PRECISION ENSEMBLE 
-# #########################################################################################################################################################################################################################################
-
-# test_patches = np.array(test_patches)
-# test_patches = test_patches.reshape((-1, 224, 224, 1))
-
-# test_labels = np.array(test_labels)
-
-# weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
-
-# predictions = np.array([model.predict(test_patches).ravel() for model in models])
-# weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
-# predicted_classes = (weighted_predictions > 0.5).astype(int)
-# true_labels = test_labels.ravel()
-
-# test_acc = accuracy_score(true_labels, predicted_classes) * 100
-
-# weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
-# test_loss = log_loss(true_labels, weighted_predictions)
-
-# conf_matrix = confusion_matrix(true_labels, predicted_classes)
-# TN = conf_matrix[0, 0]
-# FP = conf_matrix[0, 1]
-# FN = conf_matrix[1, 0]
-# TP = conf_matrix[1, 1]
-
-# # Class-wise accuracy
-# total_class_0 = TN + FN
-# total_class_1 = TP + FP
-# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
-
-# # Scale metrics
-# weighted_precision *= 100
-# weighted_recall *= 100
-# weighted_f1_score *= 100
+weighted_f1_score *= 100
+weighted_precision *= 100
+weighted_recall *= 100
 
 
-# model_name = "CNN"
-# feature_name = "Difference Map"
-# technique = "Precision Ensemble"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+model_name = "CNN"
+feature_name = "Difference Map"
+technique = "Class Balance"
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
 
-# print(f"Accuracy: {test_acc:.4f} | Precision: {weighted_precision:.4f}, Recall: {weighted_recall:.4f}, F1-score: {weighted_f1_score:.4f}, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.4f}, G.A Accuracy: {accuracy_1:.4f}")
+class_1_precision = report['Ghosting Artifact']['precision']
+models.append(cnn_cw_model)
+class_1_accuracies.append(class_1_precision)
 
 
-# misclass_En_csv_path = '/Code/Results/Precision_Ensemble_CNN_Diff_misclassified_patches.csv'
-# misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+#########################################################################################################################################################################################################################################
+## PRECISION ENSEMBLE 
+#########################################################################################################################################################################################################################################
 
-# misclassified_data = []
-# for index in misclassified_indexes:
-#     denoised_image_name = test_image_names[index]
-#     patch_number = test_patch_numbers[index]
-#     true_label = true_labels[index]
-#     predicted_label = predicted_classes[index]
+test_patches = np.array(test_patches)
+test_patches = test_patches.reshape((-1, 224, 224, 1))
 
-#     probability_non_ghosting = 1 - weighted_predictions[index]
-#     probability_ghosting = weighted_predictions[index]
+test_labels = np.array(test_labels)
+
+weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
+
+predictions = np.array([model.predict(test_patches).ravel() for model in models])
+weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
+predicted_classes = (weighted_predictions > 0.5).astype(int)
+true_labels = test_labels.ravel()
+
+test_acc = accuracy_score(true_labels, predicted_classes) * 100
+
+weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
+test_loss = log_loss(true_labels, weighted_predictions)
+
+conf_matrix = confusion_matrix(true_labels, predicted_classes)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
+
+# Class-wise accuracy
+total_class_0 = TN + FN
+total_class_1 = TP + FP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
+# Scale metrics
+weighted_precision *= 100
+weighted_recall *= 100
+weighted_f1_score *= 100
+
+
+model_name = "CNN"
+feature_name = "Difference Map"
+technique = "Precision Ensemble"
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+print(f"Accuracy: {test_acc:.4f} | Precision: {weighted_precision:.4f}, Recall: {weighted_recall:.4f}, F1-score: {weighted_f1_score:.4f}, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.4f}, G.A Accuracy: {accuracy_1:.4f}")
+
+
+misclass_En_csv_path = '/Code/Results/Precision_Ensemble_CNN_Diff_misclassified_patches.csv'
+misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+
+misclassified_data = []
+for index in misclassified_indexes:
+    denoised_image_name = test_image_names[index]
+    patch_number = test_patch_numbers[index]
+    true_label = true_labels[index]
+    predicted_label = predicted_classes[index]
+
+    probability_non_ghosting = 1 - weighted_predictions[index]
+    probability_ghosting = weighted_predictions[index]
     
-#     misclassified_data.append([
-#         denoised_image_name, patch_number, true_label, predicted_label,
-#         probability_non_ghosting, probability_ghosting
-#     ])
+    misclassified_data.append([
+        denoised_image_name, patch_number, true_label, predicted_label,
+        probability_non_ghosting, probability_ghosting
+    ])
 
-# misclassified_df = pd.DataFrame(misclassified_data, columns=[
-#     'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
-#     'Probability Non-Ghosting', 'Probability Ghosting'
-# ])
-# misclassified_df.to_csv(misclass_En_csv_path, index=False)
-
-
-# #########################################################################################################################################################################################################################################
-# ## PRECISION ENSEMBLE 
-# #########################################################################################################################################################################################################################################
-
-# predictions = np.array([model.predict(test_patches).ravel() for model in models])
-# average_predictions = np.mean(predictions, axis=0)
-
-# predicted_classes = (average_predictions > 0.5).astype(int)
-# true_labels = test_labels.ravel()
+misclassified_df = pd.DataFrame(misclassified_data, columns=[
+    'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
+    'Probability Non-Ghosting', 'Probability Ghosting'
+])
+misclassified_df.to_csv(misclass_En_csv_path, index=False)
 
 
-# test_acc = accuracy_score(true_labels, predicted_classes) * 100
-# print(f"Test Accuracy: {test_acc:.2f}%")
+#########################################################################################################################################################################################################################################
+## PRECISION ENSEMBLE 
+#########################################################################################################################################################################################################################################
 
-# test_loss = log_loss(true_labels, average_predictions)
-# print(f"Test Loss: {test_loss:.4f}")
+predictions = np.array([model.predict(test_patches).ravel() for model in models])
+average_predictions = np.mean(predictions, axis=0)
 
-# report = classification_report(true_labels, predicted_classes, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+predicted_classes = (average_predictions > 0.5).astype(int)
+true_labels = test_labels.ravel()
 
-# conf_matrix = confusion_matrix(true_labels, predicted_classes)
-# TN = conf_matrix[0, 0]
-# FP = conf_matrix[0, 1]
-# FN = conf_matrix[1, 0]
-# TP = conf_matrix[1, 1]
 
-# # Class-wise accuracy
-# total_class_0 = TN + FP
-# total_class_1 = TP + FN
-# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+test_acc = accuracy_score(true_labels, predicted_classes) * 100
+print(f"Test Accuracy: {test_acc:.2f}%")
 
-# # Precision and recall for each class
-# precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-# recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-# precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-# recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+test_loss = log_loss(true_labels, average_predictions)
+print(f"Test Loss: {test_loss:.4f}")
 
-# # Weighted precision, recall, and F1 score
-# total_samples = total_class_0 + total_class_1
-# weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
-# weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
+report = classification_report(true_labels, predicted_classes, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
 
-# if weighted_precision + weighted_recall > 0:
-#     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-# else:
-#     weighted_f1_score = 0
+conf_matrix = confusion_matrix(true_labels, predicted_classes)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
 
-# weighted_f1_score *= 100
-# weighted_precision *= 100
-# weighted_recall *= 100
+# Class-wise accuracy
+total_class_0 = TN + FP
+total_class_1 = TP + FN
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-# # Print metrics
-# print(f"Accuracy: {test_acc:.2f}% | Precision: {weighted_precision:.2f}%, Recall: {weighted_recall:.2f}%, F1-score: {weighted_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+# Precision and recall for each class
+precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
 
-# # Save metrics to a file (assuming save_metric_details is defined elsewhere)
-# model_name = "CNN"
-# feature_name = "Difference Map"
-# technique = "Average Ensemble"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+# Weighted precision, recall, and F1 score
+total_samples = total_class_0 + total_class_1
+weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
+weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
 
-# # Save misclassified patches to CSV
-# misclass_En_csv_path = '/Code/Results/Average_Ensemble_CNN_Diff_misclassified_patches.csv'
-# misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+if weighted_precision + weighted_recall > 0:
+    weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+else:
+    weighted_f1_score = 0
 
-# misclassified_data = []
-# for index in misclassified_indexes:
-#     denoised_image_name = test_image_names[index]
-#     patch_number = test_patch_numbers[index]
-#     true_label = true_labels[index]
-#     predicted_label = predicted_classes[index]
+weighted_f1_score *= 100
+weighted_precision *= 100
+weighted_recall *= 100
 
-#     probability_non_ghosting = 1 - average_predictions[index]
-#     probability_ghosting = average_predictions[index]
+# Print metrics
+print(f"Accuracy: {test_acc:.2f}% | Precision: {weighted_precision:.2f}%, Recall: {weighted_recall:.2f}%, F1-score: {weighted_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+
+# Save metrics to a file (assuming save_metric_details is defined elsewhere)
+model_name = "CNN"
+feature_name = "Difference Map"
+technique = "Average Ensemble"
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+# Save misclassified patches to CSV
+misclass_En_csv_path = '/Code/Results/Average_Ensemble_CNN_Diff_misclassified_patches.csv'
+misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+
+misclassified_data = []
+for index in misclassified_indexes:
+    denoised_image_name = test_image_names[index]
+    patch_number = test_patch_numbers[index]
+    true_label = true_labels[index]
+    predicted_label = predicted_classes[index]
+
+    probability_non_ghosting = 1 - average_predictions[index]
+    probability_ghosting = average_predictions[index]
     
-#     misclassified_data.append([
-#         denoised_image_name, patch_number, true_label, predicted_label,
-#         probability_non_ghosting, probability_ghosting
-#     ])
+    misclassified_data.append([
+        denoised_image_name, patch_number, true_label, predicted_label,
+        probability_non_ghosting, probability_ghosting
+    ])
 
-# misclassified_df = pd.DataFrame(misclassified_data, columns=[
-#     'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
-#     'Probability Non-Ghosting', 'Probability Ghosting'
-# ])
-# misclassified_df.to_csv(misclass_En_csv_path, index=False)
+misclassified_df = pd.DataFrame(misclassified_data, columns=[
+    'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
+    'Probability Non-Ghosting', 'Probability Ghosting'
+])
+misclassified_df.to_csv(misclass_En_csv_path, index=False)
