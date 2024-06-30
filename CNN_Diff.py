@@ -277,19 +277,21 @@ print(f"y_Val Shape: {y_val.shape}")
 print(f"X_Test Shape: {X_test.shape}")
 print(f"y_Test Shape: {y_test.shape}")
 
-
-
+#########################################################################################################################################################################################################################################
 # Without Class Weight
+#########################################################################################################################################################################################################################################
+
 opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = create_cnn_model()
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='Code/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint])
+wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
-
-
+#########################################################################################################################################################################################################################################
 # With Class Weight
+#########################################################################################################################################################################################################################################
 
 ng = len(train_patches[train_labels == 0])
 ga =  len(train_patches[train_labels == 1])
@@ -308,10 +310,13 @@ cnn_cw_model = create_cnn_model()
 cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 cw_model_checkpoint = ModelCheckpoint(filepath='Code/Models/CNN_Diff_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint])
+cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
+cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
 
+#########################################################################################################################################################################################################################################
 # With Class Balance
+#########################################################################################################################################################################################################################################
  
 combined = list(zip(CX_train, Cy_train))
 combined = sklearn_shuffle(combined)
@@ -344,16 +349,20 @@ cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accura
 
 
 cb_model_checkpoint = ModelCheckpoint(filepath='Code/Models/CNN_Diff_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=20, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint])
+cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
+cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=20, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
 
-
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 # Testing
 
 X_test = np.array(X_test)
 X_test = X_test.reshape((-1, 224, 224, 1))
 
+#########################################################################################################################################################################################################################################
 ## Without Class Weight
+#########################################################################################################################################################################################################################################
 
 test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
 test_acc  = test_acc *100
@@ -428,7 +437,9 @@ models.append(cnn_wcw_model)
 class_1_accuracies.append(class_1_precision)
 
 
+#########################################################################################################################################################################################################################################
 ## With Class Weight
+#########################################################################################################################################################################################################################################
 
 test_loss, test_acc = cnn_cw_model.evaluate(X_test, y_test)
 test_acc  = test_acc *100
@@ -504,7 +515,9 @@ class_1_accuracies.append(class_1_precision)
 
 
 
+#########################################################################################################################################################################################################################################
 ## With Class Balance
+#########################################################################################################################################################################################################################################
 
 test_loss, test_acc = cnn_cb_model.evaluate(X_test, y_test)
 test_acc  = test_acc *100
@@ -580,13 +593,15 @@ models.append(cnn_cw_model)
 class_1_accuracies.append(class_1_precision)
 
 
+#########################################################################################################################################################################################################################################
 ## PRECISION ENSEMBLE 
+#########################################################################################################################################################################################################################################
 
 test_patches = np.array(test_patches)
 test_patches = test_patches.reshape((-1, 224, 224, 1))
 
 test_labels = np.array(test_labels)
-test_labels = keras.utils.to_categorical(test_labels, 2)
+# test_labels = keras.utils.to_categorical(test_labels, 2)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
 predictions = np.array([model.predict(test_patches)[:, 1] for model in models])
@@ -652,8 +667,9 @@ misclassified_df = pd.DataFrame(misclassified_data, columns=[
 misclassified_df.to_csv(misclass_En_csv_path, index=False)
 
 
+#########################################################################################################################################################################################################################################
 ## PRECISION ENSEMBLE 
-
+#########################################################################################################################################################################################################################################
 
 predictions = np.array([model.predict(test_patches)[:, 1] for model in models])
 average_predictions = np.mean(predictions, axis=0)
