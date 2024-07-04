@@ -572,7 +572,7 @@ csv_file_path = '/Code/Models/weights_Softmax.csv'
 np.savetxt(csv_file_path, weights, delimiter=',')
 
 
-predictions = np.array([model.predict(test_patches).ravel() for model in models])
+predictions = np.array([model.predict(test_patches) for model in models])
 weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
 predicted_classes = (weighted_predictions > 0.5).astype(int)
 # true_labels = test_labels.ravel()
@@ -636,7 +636,7 @@ misclassified_df.to_csv(misclass_En_csv_path, index=False)
 ## PRECISION ENSEMBLE 
 #########################################################################################################################################################################################################################################
 
-predictions = np.array([model.predict(test_patches).ravel() for model in models])
+predictions = np.array([model.predict(test_patches) for model in models])
 average_predictions = np.mean(predictions, axis=0)
 
 predicted_classes = (average_predictions > 0.5).astype(int)
