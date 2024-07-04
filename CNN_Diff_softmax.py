@@ -309,7 +309,7 @@ cnn_wcw_model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['
     
 wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW_SOFTMAX.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=2, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Weight
@@ -334,7 +334,7 @@ cnn_cw_model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['a
 cw_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CW_SOFTMAX.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
-cw_history = cnn_cw_model.fit(X_train, y_train, epochs=2, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
+cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Balance
@@ -381,7 +381,7 @@ cnn_cb_model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['a
 cb_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CB_SOFTMAX.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
-cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=2, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -438,7 +438,7 @@ weighted_recall *= 100
 model_name = "CNN"
 feature_name = "Difference Map"
 technique = "Without Class Weight"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
 
 class_1_precision = report['Ghosting Artifact']['precision']
@@ -569,149 +569,151 @@ test_labels = np.array(test_labels)
 test_labels = keras.utils.to_categorical(test_labels, 2)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
-csv_file_path = '/Code/Models/weights_Softmax.csv'
+csv_file_path = '/Code/Models/Model_Weights_Softmax.csv'
 np.savetxt(csv_file_path, weights, delimiter=',')
 
 
-predictions = np.array([model.predict(test_patches) for model in models])
-weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
-predicted_classes = (weighted_predictions > 0.5).astype(int)
-# true_labels = test_labels.ravel()
-
-test_acc = accuracy_score(true_labels, predicted_classes) * 100
-
-weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
-test_loss = log_loss(true_labels, weighted_predictions)
-
-conf_matrix = confusion_matrix(true_labels, predicted_classes)
-TN = conf_matrix[0, 0]
-FP = conf_matrix[0, 1]
-FN = conf_matrix[1, 0]
-TP = conf_matrix[1, 1]
+# predictions = np.array([model.predict(test_patches) for model in models])
+# print(
+# weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
+# predicted_classes = (weighted_predictions > 0.5).astype(int)
+# # true_labels = test_labels.ravel()
 
 
-total_class_0 = TN + FN
-total_class_1 = TP + FP
-accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+# test_acc = accuracy_score(true_labels, predicted_classes) * 100
 
-weighted_precision *= 100
-weighted_recall *= 100
-weighted_f1_score *= 100
+# weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
+# test_loss = log_loss(true_labels, weighted_predictions)
 
-
-model_name = "CNN"
-feature_name = "Difference Map"
-technique = "Precision Ensemble"
-
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
-print(f"Accuracy: {test_acc:.4f} | Precision: {weighted_precision:.4f}, Recall: {weighted_recall:.4f}, F1-score: {weighted_f1_score:.4f}, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.4f}, G.A Accuracy: {accuracy_1:.4f}")
+# conf_matrix = confusion_matrix(true_labels, predicted_classes)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
 
 
-misclass_En_csv_path = '/Code/Results/Precision_Ensemble_CNN_Diff_Softmax_misclassified_patches.csv'
-misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+# total_class_0 = TN + FN
+# total_class_1 = TP + FP
+# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-misclassified_data = []
-for index in misclassified_indexes:
-    denoised_image_name = test_image_names[index]
-    patch_number = test_patch_numbers[index]
-    true_label = true_labels[index]
-    predicted_label = predicted_classes[index]
-
-    probability_non_ghosting = 1 - weighted_predictions[index]
-    probability_ghosting = weighted_predictions[index]
-    
-    misclassified_data.append([
-        denoised_image_name, patch_number, true_label, predicted_label,
-        probability_non_ghosting, probability_ghosting
-    ])
-
-misclassified_df = pd.DataFrame(misclassified_data, columns=[
-    'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
-    'Probability Non-Ghosting', 'Probability Ghosting'
-])
-misclassified_df.to_csv(misclass_En_csv_path, index=False)
+# weighted_precision *= 100
+# weighted_recall *= 100
+# weighted_f1_score *= 100
 
 
-#########################################################################################################################################################################################################################################
-## PRECISION ENSEMBLE 
-#########################################################################################################################################################################################################################################
+# model_name = "CNN"
+# feature_name = "Difference Map"
+# technique = "Precision Ensemble"
 
-predictions = np.array([model.predict(test_patches) for model in models])
-average_predictions = np.mean(predictions, axis=0)
-
-predicted_classes = (average_predictions > 0.5).astype(int)
-# true_labels = test_labels.ravel()
-
-
-test_acc = accuracy_score(true_labels, predicted_classes) * 100
-print(f"Test Accuracy: {test_acc:.2f}%")
-
-test_loss = log_loss(true_labels, average_predictions)
-print(f"Test Loss: {test_loss:.4f}")
-
-report = classification_report(true_labels, predicted_classes, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
-
-conf_matrix = confusion_matrix(true_labels, predicted_classes)
-TN = conf_matrix[0, 0]
-FP = conf_matrix[0, 1]
-FN = conf_matrix[1, 0]
-TP = conf_matrix[1, 1]
-
-
-total_class_0 = TN + FP
-total_class_1 = TP + FN
-accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
-
-precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
-
-
-total_samples = total_class_0 + total_class_1
-weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
-weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
-
-if weighted_precision + weighted_recall > 0:
-    weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-else:
-    weighted_f1_score = 0
-
-weighted_f1_score *= 100
-weighted_precision *= 100
-weighted_recall *= 100
-
-
-print(f"Accuracy: {test_acc:.2f}% | Precision: {weighted_precision:.2f}%, Recall: {weighted_recall:.2f}%, F1-score: {weighted_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
-
-model_name = "CNN"
-feature_name = "Difference Map"
-technique = "Average Ensemble"
 # save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+# print(f"Accuracy: {test_acc:.4f} | Precision: {weighted_precision:.4f}, Recall: {weighted_recall:.4f}, F1-score: {weighted_f1_score:.4f}, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.4f}, G.A Accuracy: {accuracy_1:.4f}")
 
 
-misclass_En_csv_path = '/Code/Results/Average_Ensemble_CNN_Diff_Softmax_misclassified_patches.csv'
-misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+# misclass_En_csv_path = '/Code/Results/Precision_Ensemble_CNN_Diff_Softmax_misclassified_patches.csv'
+# misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
-misclassified_data = []
-for index in misclassified_indexes:
-    denoised_image_name = test_image_names[index]
-    patch_number = test_patch_numbers[index]
-    true_label = true_labels[index]
-    predicted_label = predicted_classes[index]
+# misclassified_data = []
+# for index in misclassified_indexes:
+#     denoised_image_name = test_image_names[index]
+#     patch_number = test_patch_numbers[index]
+#     true_label = true_labels[index]
+#     predicted_label = predicted_classes[index]
 
-    probability_non_ghosting = 1 - average_predictions[index]
-    probability_ghosting = average_predictions[index]
+#     probability_non_ghosting = 1 - weighted_predictions[index]
+#     probability_ghosting = weighted_predictions[index]
     
-    misclassified_data.append([
-        denoised_image_name, patch_number, true_label, predicted_label,
-        probability_non_ghosting, probability_ghosting
-    ])
+#     misclassified_data.append([
+#         denoised_image_name, patch_number, true_label, predicted_label,
+#         probability_non_ghosting, probability_ghosting
+#     ])
 
-misclassified_df = pd.DataFrame(misclassified_data, columns=[
-    'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
-    'Probability Non-Ghosting', 'Probability Ghosting'
-])
-misclassified_df.to_csv(misclass_En_csv_path, index=False)
+# misclassified_df = pd.DataFrame(misclassified_data, columns=[
+#     'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
+#     'Probability Non-Ghosting', 'Probability Ghosting'
+# ])
+# misclassified_df.to_csv(misclass_En_csv_path, index=False)
+
+
+# #########################################################################################################################################################################################################################################
+# ## PRECISION ENSEMBLE 
+# #########################################################################################################################################################################################################################################
+
+# predictions = np.array([model.predict(test_patches) for model in models])
+# average_predictions = np.mean(predictions, axis=0)
+
+# predicted_classes = (average_predictions > 0.5).astype(int)
+# # true_labels = test_labels.ravel()
+
+
+# test_acc = accuracy_score(true_labels, predicted_classes) * 100
+# print(f"Test Accuracy: {test_acc:.2f}%")
+
+# test_loss = log_loss(true_labels, average_predictions)
+# print(f"Test Loss: {test_loss:.4f}")
+
+# report = classification_report(true_labels, predicted_classes, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+
+# conf_matrix = confusion_matrix(true_labels, predicted_classes)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
+
+
+# total_class_0 = TN + FP
+# total_class_1 = TP + FN
+# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
+# precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+# recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+# precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+# recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+
+
+# total_samples = total_class_0 + total_class_1
+# weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
+# weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
+
+# if weighted_precision + weighted_recall > 0:
+#     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+# else:
+#     weighted_f1_score = 0
+
+# weighted_f1_score *= 100
+# weighted_precision *= 100
+# weighted_recall *= 100
+
+
+# print(f"Accuracy: {test_acc:.2f}% | Precision: {weighted_precision:.2f}%, Recall: {weighted_recall:.2f}%, F1-score: {weighted_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+
+# model_name = "CNN"
+# feature_name = "Difference Map"
+# technique = "Average Ensemble"
+# # save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+
+# misclass_En_csv_path = '/Code/Results/Average_Ensemble_CNN_Diff_Softmax_misclassified_patches.csv'
+# misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+
+# misclassified_data = []
+# for index in misclassified_indexes:
+#     denoised_image_name = test_image_names[index]
+#     patch_number = test_patch_numbers[index]
+#     true_label = true_labels[index]
+#     predicted_label = predicted_classes[index]
+
+#     probability_non_ghosting = 1 - average_predictions[index]
+#     probability_ghosting = average_predictions[index]
+    
+#     misclassified_data.append([
+#         denoised_image_name, patch_number, true_label, predicted_label,
+#         probability_non_ghosting, probability_ghosting
+#     ])
+
+# misclassified_df = pd.DataFrame(misclassified_data, columns=[
+#     'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
+#     'Probability Non-Ghosting', 'Probability Ghosting'
+# ])
+# misclassified_df.to_csv(misclass_En_csv_path, index=False)
