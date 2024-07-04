@@ -119,7 +119,7 @@ def prepare_data(data, labels):
 #########################################################################################################################################################################################################################################
 
 def save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path):
-    
+    function = "Sigmoid"
     if path.exists(result_file_path):
     
         df_existing = pd.read_csv(result_file_path)
@@ -127,6 +127,7 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
             'Model': [model_name],
             'Technique' : [technique],
             'Feature Map' : [feature_name],
+            'Function' : [function],
             'Overall Accuracy': [test_acc],
             'Precision': [weighted_precision],
             'Recall': [weighted_recall],
@@ -142,6 +143,7 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
             'Model': [model_name],
             'Technique' : [technique],            
             'Feature Map' : [feature_name],
+            'Function' : [function],
             'Overall Accuracy': [test_acc],
             'Precision': [weighted_precision],
             'Recall': [weighted_recall],
@@ -162,10 +164,7 @@ def augmented_images(data, num_augmented_images_per_original):
     
     data_augmentation = ImageDataGenerator(
         rotation_range=40,
-        # width_shift_range=0.2,
-        # height_shift_range=0.2,
         shear_range=0.2,
-        # zoom_range=0.2,
         horizontal_flip=True,
         vertical_flip=True,
         fill_mode='nearest'
@@ -303,7 +302,7 @@ opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = create_cnn_model()
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
-wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
@@ -327,7 +326,7 @@ opt = Adam(learning_rate=2e-05)
 cnn_cw_model = create_cnn_model()
 cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-cw_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cw_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CW_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
 cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
@@ -359,14 +358,12 @@ cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
 cb_train_patches = np.array(cb_train_patches)
 cb_train_labels = np.array(cb_train_labels)
 
-# cb_train_labels = keras.utils.to_categorical(cb_train_labels, 2)
-
 opt = Adam(learning_rate=2e-05)
 cnn_cb_model = create_cnn_model()
 cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 
-cb_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cb_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CB_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
 cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
@@ -398,7 +395,7 @@ plt.xlabel('Recall')
 plt.ylabel('Precision')
 plt.title('Precision-Recall Curve')
 plt.grid(True)
-precision_recall_curve_path = '/Code/Plots/CNN_Diff_wCW_precision_recall_curve.png'
+precision_recall_curve_path = '/Code/Plots/CNN_Diff_wCW_SIGMOID_precision_recall_curve.png'
 
 if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
     os.makedirs(os.path.dirname(precision_recall_curve_path))
@@ -471,7 +468,7 @@ plt.ylabel('Precision')
 plt.title('Precision-Recall Curve')
 plt.legend()
 plt.grid(True)
-precision_recall_curve_path = '/Code/Plots/CNN_Diff_CW_precision_recall_curve.png'
+precision_recall_curve_path = '/Code/Plots/CNN_Diff_CW_SIGMOID_precision_recall_curve.png'
 
 if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
     os.makedirs(os.path.dirname(precision_recall_curve_path))
@@ -546,7 +543,7 @@ plt.ylabel('Precision')
 plt.title('Precision-Recall Curve')
 plt.legend()
 plt.grid(True)
-precision_recall_curve_path = '/Code/Plots/CNN_Diff_CB_precision_recall_curve.png'
+precision_recall_curve_path = '/Code/Plots/CNN_Diff_CB_SIGMOID_precision_recall_curve.png'
 
 if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
     os.makedirs(os.path.dirname(precision_recall_curve_path))
@@ -610,6 +607,8 @@ test_patches = test_patches.reshape((-1, 224, 224, 1))
 test_labels = np.array(test_labels)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
+csv_file_path = '/Code/Models/weights_SIGMOID.csv'
+np.savetxt(csv_file_path, weights, delimiter=',')
 
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
 weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
@@ -647,7 +646,7 @@ save_metric_details(model_name, technique, feature_name, test_acc, weighted_prec
 print(f"Accuracy: {test_acc:.4f} | Precision: {weighted_precision:.4f}, Recall: {weighted_recall:.4f}, F1-score: {weighted_f1_score:.4f}, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.4f}, G.A Accuracy: {accuracy_1:.4f}")
 
 
-misclass_En_csv_path = '/Code/Results/Precision_Ensemble_CNN_Diff_misclassified_patches.csv'
+misclass_En_csv_path = '/Code/Results/Precision_Ensemble_CNN_Diff_SIGMOID_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
@@ -733,7 +732,7 @@ technique = "Average Ensemble"
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 # Save misclassified patches to CSV
-misclass_En_csv_path = '/Code/Results/Average_Ensemble_CNN_Diff_misclassified_patches.csv'
+misclass_En_csv_path = '/Code/Results/Average_Ensemble_CNN_Diff_SIGMOID_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
