@@ -3,7 +3,6 @@ import numpy as np
 import os
 from os import path
 import csv
-# import cv2
 import textwrap
 import pandas as pd
 import resource
@@ -12,6 +11,7 @@ from tensorflow.keras.regularizers import l1
 from tensorflow import keras
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import plot_model
+import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization, concatenate
 from keras.callbacks import ModelCheckpoint
@@ -28,7 +28,7 @@ class_1_accuracies = []
 
 original_dir = '/Dataset/dataset_patch_raw_ver3/original'
 denoised_dir = '/Dataset/dataset_patch_raw_ver3/denoised'
-csv_path     = '/Dataset/dataset_patch_raw_ver3/patch_label_median_verified3.csv'
+csv_path     = '/Dataset/patch_label_median_verified3.csv'
 result_file_path = "/Code/Results/Overall_result.csv"
 
 #########################################################################################################################################################################################################################################
@@ -118,7 +118,7 @@ def prepare_data(data, labels):
 #########################################################################################################################################################################################################################################
 
 def save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path):
-    
+    function = "Softmax"
     if path.exists(result_file_path):
     
         df_existing = pd.read_csv(result_file_path)
@@ -126,6 +126,7 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
             'Model': [model_name],
             'Technique' : [technique],
             'Feature Map' : [feature_name],
+            'Function' : [function],
             'Overall Accuracy': [test_acc],
             'Precision': [weighted_precision],
             'Recall': [weighted_recall],
@@ -141,6 +142,7 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
             'Model': [model_name],
             'Technique' : [technique],            
             'Feature Map' : [feature_name],
+            'Function' : [function],
             'Overall Accuracy': [test_acc],
             'Precision': [weighted_precision],
             'Recall': [weighted_recall],
@@ -161,10 +163,7 @@ def augmented_images(data, num_augmented_images_per_original):
     
     data_augmentation = ImageDataGenerator(
         rotation_range=40,
-        # width_shift_range=0.2,
-        # height_shift_range=0.2,
         shear_range=0.2,
-        # zoom_range=0.2,
         horizontal_flip=True,
         vertical_flip=True,
         fill_mode='nearest'
@@ -190,20 +189,20 @@ def create_cnn_model(input_shape=(224,224, 1)):
 
     model.add(MaxPooling2D(pool_size=(3,3)))
     model.add(BatchNormalization())     
-    
-
     model.add(Conv2D(64, kernel_size=(3,3), activation='elu'))
     model.add(Conv2D(64, kernel_size=(3,3), activation='elu'))
+  
     model.add(Conv2D(128, kernel_size=(3,3), activation='elu'))
     model.add(Conv2D(128, kernel_size=(3,3), activation='elu'))
 
     model.add(BatchNormalization())
     model.add(Flatten())
     model.add(Dense(128, activation='elu'))
-
-    model.add(Dense(1, activation='sigmoid'))
+  
+    model.add(Dense(2, activation='softmax'))
     return model
-    
+
+#########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
 original_patches, denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, original_dir, denoised_dir)
@@ -225,10 +224,10 @@ print(f" Total GA Patches: {num_ghosting_artifacts}")
 print(f" Total NGA Labels: {num_non_ghosting_artifacts}")
 
 #########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 num_test_ghosting = 1500
 num_test_non_ghosting = 1500
-
 
 num_train_ghosting = num_ghosting_artifacts - num_test_ghosting
 num_train_non_ghosting = num_non_ghosting_artifacts - num_test_non_ghosting
@@ -258,6 +257,7 @@ print(f" Total Test Patches: {len(test_patches)}")
 print(f" Total Test Labels: {len(test_labels)}")
 
 #########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 ghosting_patches = train_patches[train_labels == 1]
 
@@ -277,14 +277,16 @@ print(f" Total Augmented Patches: {len(train_patches_combined)}")
 aghosting_patches = train_patches_combined[train_labels_combined == 1]
 print(f" Total Augmented GA: {len(aghosting_patches)}")
 
-#########################################################################################################################################################################################################################################
-
 X_train, X_temp, y_train, y_temp = train_test_split(train_patches_combined, train_labels_combined, test_size=0.2, random_state=42)
 
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
 CX_train = X_train
 Cy_train = y_train
+
+y_train = keras.utils.to_categorical(y_train, 2)
+y_val = keras.utils.to_categorical(y_val, 2)
+
 
 print(f"X_Train Shape: {X_train.shape}")
 print(f"y_Train Shape: {y_train.shape}")
@@ -295,17 +297,18 @@ print(f"y_Val Shape: {y_val.shape}")
 print(f"X_Test Shape: {X_test.shape}")
 print(f"y_Test Shape: {y_test.shape}")
 
+
 #########################################################################################################################################################################################################################################
 # Without Class Weight
 #########################################################################################################################################################################################################################################
 
 opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = create_cnn_model()
-cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-
-wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=5, restore_best_weights=True)
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+cnn_wcw_model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    
+wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW_SOFTMAX.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -314,42 +317,25 @@ wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_
 X_test = np.array(X_test)
 X_test = X_test.reshape((-1, 224, 224, 1))
 
+y_test= np.array(y_test)
+y_test = keras.utils.to_categorical(y_test, 2)
 #########################################################################################################################################################################################################################################
 ## Without Class Weight
 #########################################################################################################################################################################################################################################
-from sklearn.metrics import classification_report, precision_recall_curve, confusion_matrix
-import numpy as np
-import matplotlib.pyplot as plt
-import os
-import tensorflow as tf
-
 
 test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
 test_acc  = test_acc * 100
 
 predictions = cnn_wcw_model.predict(X_test)
 
-predicted_labels = (predictions > 0.5).astype(int).ravel()
-true_labels = y_test.ravel()  
+predicted_labels = np.argmax(predictions, axis=1)
+true_labels = np.argmax(y_test, axis=-1)
 
-precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
+print(len(predicted_labels))
 
-plt.figure()
-plt.plot(recall, precision, linestyle='-', color='b')
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.title('Precision-Recall Curve')
-plt.grid(True)
-precision_recall_curve_path = '/Code/Plots/CNN_Diff_wCW_precision_recall_curve.png'
-
-if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
-    os.makedirs(os.path.dirname(precision_recall_curve_path))
-
-plt.savefig(precision_recall_curve_path, dpi=300)
-plt.close()
+print(len(true_labels))
 
 report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
-print(report)
 
 conf_matrix = confusion_matrix(true_labels, predicted_labels)
 TN = conf_matrix[0, 0]
@@ -382,8 +368,12 @@ weighted_f1_score *= 100
 weighted_precision *= 100
 weighted_recall *= 100
 
-print(f"Weighted Precision: {weighted_precision:.2f}%")
-print(f"Weighted Recall: {weighted_recall:.2f}%")
-print(f"Weighted F1 Score: {weighted_f1_score:.2f}%")
+model_name = "CNN"
+feature_name = "Difference Map"
+technique = "Without Class Weight"
 
 print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
+
+class_1_precision = report['Ghosting Artifact']['precision']
+models.append(cnn_wcw_model)
+class_1_accuracies.append(class_1_precision)
