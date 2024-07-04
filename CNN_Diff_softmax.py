@@ -1,5 +1,5 @@
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 import os
 from os import path
 import csv
@@ -397,15 +397,13 @@ y_test = keras.utils.to_categorical(y_test, 2)
 #########################################################################################################################################################################################################################################
 
 test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
-test_acc  = test_acc * 100
+test_acc  = test_acc *100
 
 predictions = cnn_wcw_model.predict(X_test)
-
 predicted_labels = np.argmax(predictions, axis=1)
-true_labels = np.argmax(y_test, axis=-1)
+true_labels = np.argmax(y_test, axis=-1) 
 
 report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
-
 conf_matrix = confusion_matrix(true_labels, predicted_labels)
 TN = conf_matrix[0, 0]
 FP = conf_matrix[0, 1]
@@ -457,7 +455,7 @@ test_acc  = test_acc *100
 
 predictions = cnn_cw_model.predict(X_test)
 predicted_labels = np.argmax(predictions, axis=1)
-true_labels = np.argmax(test_labels, axis=-1)  
+true_labels = np.argmax(y_test, axis=-1)  
 
 report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
 
@@ -514,7 +512,7 @@ test_acc  = test_acc *100
 
 predictions = cnn_cw_model.predict(X_test)
 predicted_labels = np.argmax(predictions, axis=1)
-true_labels = np.argmax(test_labels, axis=-1)  
+true_labels = np.argmax(y_test, axis=-1)  
 
 report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
 
