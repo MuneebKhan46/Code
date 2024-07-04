@@ -493,7 +493,7 @@ weighted_recall *= 100
 model_name = "CNN"
 feature_name = "Difference Map"
 technique = "Class Weight"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
 
 
@@ -550,7 +550,7 @@ weighted_recall *= 100
 model_name = "CNN"
 feature_name = "Difference Map"
 technique = "Class Balance"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
 
 class_1_precision = report['Ghosting Artifact']['precision']
@@ -575,7 +575,7 @@ np.savetxt(csv_file_path, weights, delimiter=',')
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
 weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
 predicted_classes = (weighted_predictions > 0.5).astype(int)
-true_labels = test_labels.ravel()
+# true_labels = test_labels.ravel()
 
 test_acc = accuracy_score(true_labels, predicted_classes) * 100
 
@@ -602,8 +602,8 @@ weighted_f1_score *= 100
 model_name = "CNN"
 feature_name = "Difference Map"
 technique = "Precision Ensemble"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 print(f"Accuracy: {test_acc:.4f} | Precision: {weighted_precision:.4f}, Recall: {weighted_recall:.4f}, F1-score: {weighted_f1_score:.4f}, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.4f}, G.A Accuracy: {accuracy_1:.4f}")
 
 
@@ -640,7 +640,7 @@ predictions = np.array([model.predict(test_patches).ravel() for model in models]
 average_predictions = np.mean(predictions, axis=0)
 
 predicted_classes = (average_predictions > 0.5).astype(int)
-true_labels = test_labels.ravel()
+# true_labels = test_labels.ravel()
 
 
 test_acc = accuracy_score(true_labels, predicted_classes) * 100
