@@ -566,6 +566,7 @@ test_patches = np.array(test_patches)
 test_patches = test_patches.reshape((-1, 224, 224, 1))
 
 test_labels = np.array(test_labels)
+test_labels = keras.utils.to_categorical(test_labels, 2)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
 csv_file_path = '/Code/Models/weights_Softmax.csv'
