@@ -366,8 +366,8 @@ print(f"Class balance train size {len(cb_train_dataset)}")
 
 cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
 
-# cb_train_patches = np.array(cb_train_patches)
-# cb_train_labels = np.array(cb_train_labels)
+cb_train_patches = np.array(cb_train_patches)
+cb_train_labels = np.array(cb_train_labels)
 
 opt = Adam(learning_rate=2e-05)
 cnn_cb_model = create_cnn_model()
