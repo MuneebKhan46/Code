@@ -309,18 +309,29 @@ wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=1, validation_data=(X_v
 #########################################################################################################################################################################################################################################
 # With Class Weight
 #########################################################################################################################################################################################################################################
-
-ng = len(train_patches[train_labels == 0])
-ga =  len(train_patches[train_labels == 1])
+ng = len(cb_train_patches[cb_train_labels == 0])
+ga = len(cb_train_patches[cb_train_labels == 1])
 total = ng + ga
 
-imbalance_ratio = ng / ga  
 weight_for_0 = (1 / ng) * (total / 2.0)
 weight_for_1 = (1 / ga) * (total / 2.0)
 class_weight = {0: weight_for_0, 1: weight_for_1}
 
 print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
 print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
+
+
+# ng = len(train_patches[train_labels == 0])
+# ga =  len(train_patches[train_labels == 1])
+# total = ng + ga
+
+# imbalance_ratio = ng / ga  
+# weight_for_0 = (1 / ng) * (total / 2.0)
+# weight_for_1 = (1 / ga) * (total / 2.0)
+# class_weight = {0: weight_for_0, 1: weight_for_1}
+
+# print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
+# print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
 
 opt = Adam(learning_rate=2e-05)
 cnn_cw_model = create_cnn_model()
@@ -366,7 +377,14 @@ cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accura
 cb_model_checkpoint = ModelCheckpoint(filepath='/Code/Models/CNN_Diff_CB_POSITIVE.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
-cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=1, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+# cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=1, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+cb_history = cnn_cb_model.fit(
+    cb_train_patches, cb_train_labels,
+    epochs=50,
+    class_weight=class_weight,
+    validation_data=(X_val, y_val),
+    callbacks=[cb_model_checkpoint, cb_model_early_stopping]
+)
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
