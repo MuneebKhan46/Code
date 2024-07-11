@@ -722,7 +722,7 @@ weighted_precision *= 100
 weighted_recall *= 100
 
 # Print metrics
-print(f"Accuracy: {test_acc:.2f}% | Precision: {weighted_precision:.2f}%, Recall: {weighted_recall:.2f}%, F1-score: {weighted_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+print(f"Accuracy: {test_acc:.2f} | Precision: {weighted_precision:.2f}, Recall: {weighted_recall:.2f}, F1-score: {weighted_f1_score:.2f}, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}, G.A Accuracy: {accuracy_1:.2f}")
 
 # Save metrics to a file (assuming save_metric_details is defined elsewhere)
 model_name = "CNN"
