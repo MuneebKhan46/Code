@@ -298,13 +298,13 @@ print(f"y_Test Shape: {y_test.shape}")
 # Without Class Weight
 #########################################################################################################################################################################################################################################
 
-opt = Adam(learning_rate=2e-05)
-cnn_wcw_model = create_cnn_model()
-cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+# opt = Adam(learning_rate=2e-05)
+# cnn_wcw_model = create_cnn_model()
+# cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
-wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW_POSITIVE.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=1, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+# wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_Diff_wCW_POSITIVE.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+# wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+# wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=1, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Weight
