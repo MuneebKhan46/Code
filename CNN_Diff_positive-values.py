@@ -378,72 +378,72 @@ X_test = X_test.reshape((-1, 224, 224, 1))
 ## Without Class Weight
 #########################################################################################################################################################################################################################################
 
-# test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
-# test_acc  = test_acc * 100
+test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
+test_acc  = test_acc * 100
 
-# predictions = cnn_wcw_model.predict(X_test)
+predictions = cnn_wcw_model.predict(X_test)
 
-# predicted_labels = (predictions > 0.5).astype(int).ravel()
-# true_labels = y_test.ravel()  
+predicted_labels = (predictions > 0.5).astype(int).ravel()
+true_labels = y_test.ravel()  
 
-# precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
+precision, recall, _ = precision_recall_curve(true_labels, predictions.ravel())
 
-# plt.figure()
-# plt.plot(recall, precision, linestyle='-', color='b')
-# plt.xlabel('Recall')
-# plt.ylabel('Precision')
-# plt.title('Precision-Recall Curve')
-# plt.grid(True)
-# precision_recall_curve_path = '/Code/Plots/CNN_Diff_wCW_POSITIVE_precision_recall_curve.png'
+plt.figure()
+plt.plot(recall, precision, linestyle='-', color='b')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.grid(True)
+precision_recall_curve_path = '/Code/Plots/CNN_Diff_wCW_POSITIVE_precision_recall_curve.png'
 
-# if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
-#     os.makedirs(os.path.dirname(precision_recall_curve_path))
+if not os.path.exists(os.path.dirname(precision_recall_curve_path)):
+    os.makedirs(os.path.dirname(precision_recall_curve_path))
 
-# plt.savefig(precision_recall_curve_path, dpi=300)
-# plt.close()
+plt.savefig(precision_recall_curve_path, dpi=300)
+plt.close()
 
-# report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+report = classification_report(true_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
 
-# conf_matrix = confusion_matrix(true_labels, predicted_labels)
-# TN = conf_matrix[0, 0]
-# FP = conf_matrix[0, 1]
-# FN = conf_matrix[1, 0]
-# TP = conf_matrix[1, 1]
-
-
-# total_class_0 = TN + FP
-# total_class_1 = TP + FN
-# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+conf_matrix = confusion_matrix(true_labels, predicted_labels)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
 
 
-# precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-# recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-# precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-# recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+total_class_0 = TN + FP
+total_class_1 = TP + FN
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-# total_samples = total_class_0 + total_class_1
-# weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
-# weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
 
-# if weighted_precision + weighted_recall > 0:
-#     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-# else:
-#     weighted_f1_score = 0
+precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
 
-# weighted_f1_score *= 100
-# weighted_precision *= 100
-# weighted_recall *= 100
+total_samples = total_class_0 + total_class_1
+weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
+weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
 
-# model_name = "CNN"
-# feature_name = "Difference Map"
-# technique = "Without Class Weight"
-# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
-# print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
+if weighted_precision + weighted_recall > 0:
+    weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+else:
+    weighted_f1_score = 0
 
-# class_1_precision = report['Ghosting Artifact']['precision']
-# models.append(cnn_wcw_model)
-# class_1_accuracies.append(class_1_precision)
+weighted_f1_score *= 100
+weighted_precision *= 100
+weighted_recall *= 100
+
+model_name = "CNN"
+feature_name = "Difference Map"
+technique = "Without Class Weight"
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
+
+class_1_precision = report['Ghosting Artifact']['precision']
+models.append(cnn_wcw_model)
+class_1_accuracies.append(class_1_precision)
 
 
 #########################################################################################################################################################################################################################################
