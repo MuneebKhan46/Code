@@ -358,7 +358,7 @@ cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accur
     
 wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_MultiFeature_wCW_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=2, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -458,7 +458,14 @@ print(f"Shape of test_label: {test_labels.shape}")
 expected_input_shape = cnn_wcw_model.input_shape
 print(f"Expected input shape: {expected_input_shape}")
 
-
+if test_pat.dtype != np.float32:
+    print(f"Converting test_pat to float32")
+    # test_pat = test_pat.astype(np.float32)
+    
+# Ensure the test_label is of type int
+if test_label.dtype != np.int:
+    print(f"Converting test_label to int")
+    # test_label = test_label.astype(np.int)
 
 
 
