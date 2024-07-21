@@ -211,7 +211,7 @@ def augmented_images(data, num_augmented_images_per_original):
 
 #########################################################################################################################################################################################################################################
 
-def create_cnn_model(input_shape=(224, 224, 2)):
+def create_cnn_model(input_shape=(224, 224, 1)):
     model = Sequential()
     model.add(Conv2D(32, kernel_size=(3, 3), activation='elu', input_shape=input_shape))
     model.add(Conv2D(32, kernel_size=(3, 3), activation='elu'))
@@ -233,21 +233,21 @@ def create_cnn_model(input_shape=(224, 224, 2)):
 
 original_patches, denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, original_dir, denoised_dir)
 
-diff_patches = calculate_difference(original_patches, denoised_patches)
+# diff_patches = calculate_difference(original_patches, denoised_patches)
 normalized_diff_patches = calculate_normalized_difference(original_patches, denoised_patches)
 
 # psnr_values = calculate_psnr(original_patches, denoised_patches)
 # ssim_values =calculate_ssim( original_patches, denoised_patches)
 
-combine_features = combine_features(diff_patches, normalized_diff_patches)
+# combine_features = combine_features(diff_patches, normalized_diff_patches)
 # combine_features = combine_features(diff_patches, normalized_diff_patches, psnr_values, ssim_values)
 
-print(f" Difference Map Shape: {diff_patches[0].shape}")
+# print(f" Difference Map Shape: {diff_patches[0].shape}")
 print(f" Normalized Difference Map Shape: {normalized_diff_patches[0].shape}")
-print(f" Combine Feature Map Shape: {combine_features[0].shape}")
+# print(f" Combine Feature Map Shape: {combine_features[0].shape}")
 
 
-combined_features_np, labels_np = prepare_data(combine_features, labels)
+combined_features_np, labels_np = prepare_data(normalized_diff_patches, labels)
 
 print(f" Combine Feature Shape: {combined_features_np.shape}")
 
