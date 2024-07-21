@@ -349,3 +349,11 @@ test_acc  = test_acc * 100
 
 print(f"Augmented Test Accuracy: {test_acc}")
 print(f"Augmented Test Loss: {test_loss}")
+
+
+
+test_loss, test_acc = cnn_wcw_model.evaluate(test_patches, test_labels)
+test_acc  = test_acc * 100
+
+print(f"Test Accuracy: {test_acc}")
+print(f"Test Loss: {test_loss}")
