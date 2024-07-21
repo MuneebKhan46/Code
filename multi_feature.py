@@ -314,12 +314,14 @@ print(f" Total Test Labels: {len(test_labels)}")
 # aghosting_patches = train_patches_combined[train_labels_combined == 1]
 # print(f" Total Augmented GA: {len(aghosting_patches)}")
 
-X_train, X_temp, y_train, y_temp = train_test_split(train_patches, train_labels, test_size=0.2, random_state=42)
+# X_train, X_temp, y_train, y_temp = train_test_split(train_patches, train_labels, test_size=0.2, random_state=42)
+# X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
-X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+# CX_train = X_train
+# Cy_train = y_train
 
-CX_train = X_train
-Cy_train = y_train
+
+X_train, X_val, y_train, y_val = train_test_split(train_patches, train_labels, test_size=0.1, random_state=42)
 
 print(f"X_Train Shape: {X_train.shape}")
 print(f"y_Train Shape: {y_train.shape}")
@@ -327,8 +329,8 @@ print(f"y_Train Shape: {y_train.shape}")
 print(f"X_Val Shape: {X_val.shape}")
 print(f"y_Val Shape: {y_val.shape}")
 
-print(f"X_Test Shape: {X_test.shape}")
-print(f"y_Test Shape: {y_test.shape}")
+# print(f"X_Test Shape: {X_test.shape}")
+# print(f"y_Test Shape: {y_test.shape}")
 
 
 
@@ -344,11 +346,11 @@ wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_
 
 
 
-test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
-test_acc  = test_acc * 100
+# test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
+# test_acc  = test_acc * 100
 
-print(f"Augmented Test Accuracy: {test_acc}")
-print(f"Augmented Test Loss: {test_loss}")
+# print(f"Augmented Test Accuracy: {test_acc}")
+# print(f"Augmented Test Loss: {test_loss}")
 
 
 
