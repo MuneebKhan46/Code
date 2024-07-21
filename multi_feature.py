@@ -351,7 +351,9 @@ print(f"y_Test Shape: {y_test.shape}")
 
 opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = create_cnn_model()
-cnn_wcw_model.summary()
+
+# cnn_wcw_model.summary()
+
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
 wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_MultiFeature_wCW_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
