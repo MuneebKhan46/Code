@@ -34,6 +34,8 @@ denoised_dir = '/Dataset/dataset_patch_raw_ver3/denoised'
 csv_path     = '/Dataset/patch_label_median_verified3.csv'
 result_file_path = "/Code/Results/Multi_Feature_result.csv"
 
+#########################################################################################################################################################################################################################################
+
 def extract_y_channel_from_yuv_with_patch_numbers(yuv_file_path: str, width: int, height: int):
     y_size = width * height
     patches, patch_numbers = [], []
@@ -63,6 +65,7 @@ def extract_y_channel_from_yuv_with_patch_numbers(yuv_file_path: str, width: int
 
     return patches, patch_numbers
   
+#########################################################################################################################################################################################################################################
 
 def load_data_from_csv(csv_path, original_dir, denoised_dir):
     df = pd.read_csv(csv_path)
@@ -98,7 +101,7 @@ def load_data_from_csv(csv_path, original_dir, denoised_dir):
 
     return all_original_patches, all_denoised_patches, all_scores, denoised_image_names, all_patch_numbers
 
-
+#########################################################################################################################################################################################################################################
 
 def calculate_difference(original, denoised):
     return [denoised_patch.astype(np.int16) - orig_patch.astype(np.int16) for orig_patch, denoised_patch in zip(original, denoised)]
@@ -118,6 +121,7 @@ def calculate_ssim(original, denoised):
 #     combined_features = [np.stack((diff, norm_diff), axis=-1) for diff, norm_diff in zip(diff_patches, normalized_diff_patches)]
 #     return combined_features
 
+#########################################################################################################################################################################################################################################
 
 def combine_features(diff_patches, normalized_diff_patches, psnr_values, ssim_values):
     combined_features = []
@@ -129,11 +133,14 @@ def combine_features(diff_patches, normalized_diff_patches, psnr_values, ssim_va
         combined_features.append(combined_feature)
     return combined_features
 
+#########################################################################################################################################################################################################################################
 
 def prepare_data(data, labels):
     data = np.array(data).astype('float32')
     lbl = np.array(labels)
     return data, lbl
+
+#########################################################################################################################################################################################################################################
 
 def save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path):
     if os.path.exists(result_file_path):
@@ -166,6 +173,31 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
         })
 
     df_metrics.to_csv(result_file_path, index=False)
+
+#########################################################################################################################################################################################################################################
+
+def augmented_images(data, num_augmented_images_per_original):
+    augmented_images = []
+    
+    data_augmentation = ImageDataGenerator(
+        rotation_range=40,
+        shear_range=0.2,
+        horizontal_flip=True,
+        vertical_flip=True,
+        fill_mode='nearest'
+    )
+
+    for i, patch in enumerate(data):
+        patch = np.expand_dims(patch, axis=0)
+        temp_generator = data_augmentation.flow(patch, batch_size=1)
+        
+        for _ in range(num_augmented_images_per_original):
+            augmented_image = next(temp_generator)[0]  
+            augmented_image = np.squeeze(augmented_image)
+            augmented_images.append(augmented_image)
+    return augmented_images
+
+#########################################################################################################################################################################################################################################
 
 def create_cnn_model(input_shape=(224, 224, 4)):
     model = Sequential()
