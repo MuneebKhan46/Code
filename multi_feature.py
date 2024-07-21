@@ -184,15 +184,14 @@ def create_cnn_model(input_shape=(224, 224, 4)):
     return model
 
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
+
 original_patches, denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, original_dir, denoised_dir)
 
-
 diff_patches = calculate_difference(original_patches, denoised_patches)
-
 normalized_diff_patches = calculate_normalized_difference(original_patches, denoised_patches)
-
 psnr_values = calculate_psnr(original_patches, denoised_patches)
-
 ssim_values =calculate_ssim( original_patches, denoised_patches)
 
 combine_features = combine_features(diff_patches, normalized_diff_patches, psnr_values, ssim_values)
@@ -202,10 +201,13 @@ print(f" Normalized Difference Map Shape: {normalized_diff_patches[0].shape}")
 print(f" Combine Feature Map Shape: {combine_features[0].shape}")
 
 
-combined_features_np, labels_np = prepare_data(combined_features, labels)
+combined_features_np, labels_np = prepare_data(combine_features, labels)
 
 print(f" Combine Feature Shape: {combined_features_np.shape}")
 
+
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
 combined = list(zip(combined_features_np, labels_np))
 combined = sklearn_shuffle(combined)
@@ -220,4 +222,72 @@ num_non_ghosting_artifacts = len(non_ghosting_artifacts)
 print(f" Total GA Patches: {num_ghosting_artifacts}")
 print(f" Total NGA Labels: {num_non_ghosting_artifacts}")
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
+num_test_ghosting = 1500
+num_test_non_ghosting = 1500
+
+num_train_ghosting = num_ghosting_artifacts - num_test_ghosting
+num_train_non_ghosting = num_non_ghosting_artifacts - num_test_non_ghosting
+
+train_ghosting = ghosting_artifacts[num_test_ghosting:]
+test_ghosting = ghosting_artifacts[:num_test_ghosting]
+
+train_non_ghosting = non_ghosting_artifacts[num_test_non_ghosting:]
+test_non_ghosting = non_ghosting_artifacts[:num_test_non_ghosting]
+
+train_dataset = train_ghosting + train_non_ghosting
+test_dataset = test_ghosting + test_non_ghosting
+
+train_patches, train_labels, train_image_names, train_patch_numbers = zip(*train_dataset)
+test_patches, test_labels, test_image_names, test_patch_numbers = zip(*test_dataset)
+
+train_patches = np.array(train_patches)
+train_labels = np.array(train_labels)
+
+print(f" Total Train Patches: {len(train_patches)}")
+print(f" Total Train Labels: {len(train_labels)}")
+
+test_patches = np.array(test_patches)
+test_labels = np.array(test_labels)
+
+print(f" Total Test Patches: {len(test_patches)}")
+print(f" Total Test Labels: {len(test_labels)}")
+
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
+
+ghosting_patches = train_patches[train_labels == 1]
+
+ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
+augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=12)
+
+augmented_images_np = np.stack(augmented_images)
+augmented_labels = np.ones(len(augmented_images_np))
+
+train_patches_expanded = np.expand_dims(train_patches, axis=-1)
+augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
+
+train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np_expanded), axis=0)
+train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
+
+print(f" Total Augmented Patches: {len(train_patches_combined)}")
+aghosting_patches = train_patches_combined[train_labels_combined == 1]
+print(f" Total Augmented GA: {len(aghosting_patches)}")
+
+X_train, X_temp, y_train, y_temp = train_test_split(train_patches_combined, train_labels_combined, test_size=0.2, random_state=42)
+
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+
+CX_train = X_train
+Cy_train = y_train
+
+print(f"X_Train Shape: {X_train.shape}")
+print(f"y_Train Shape: {y_train.shape}")
+
+print(f"X_Val Shape: {X_val.shape}")
+print(f"y_Val Shape: {y_val.shape}")
+
+print(f"X_Test Shape: {X_test.shape}")
+print(f"y_Test Shape: {y_test.shape}")
