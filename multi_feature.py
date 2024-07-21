@@ -212,7 +212,7 @@ def create_cnn_model(input_shape=(224, 224, 4)):
     model.add(BatchNormalization())
     model.add(Flatten())
     model.add(Dense(128, activation='elu'))
-    model.add(Dense(2, activation='softmax'))
+    model.add(Dense(1, activation='sigmoid'))
     return model
 
 
@@ -292,7 +292,13 @@ print(f" Total Test Labels: {len(test_labels)}")
 
 ghosting_patches = train_patches[train_labels == 1]
 
-ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
+# ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
+if ghosting_patches.ndim == 3:
+    ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
+else:
+    ghosting_patches_expanded = ghosting_patches
+
+
 augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=12)
 
 augmented_images_np = np.stack(augmented_images)
@@ -323,3 +329,23 @@ print(f"y_Val Shape: {y_val.shape}")
 
 print(f"X_Test Shape: {X_test.shape}")
 print(f"y_Test Shape: {y_test.shape}")
+
+
+
+
+
+opt = Adam(learning_rate=2e-05)
+cnn_wcw_model = create_cnn_model()
+cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+    
+wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Code/Models/CNN_MultiFeature_wCW_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+
+
+
+test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
+test_acc  = test_acc * 100
+
+print(f"Augmented Test Accuracy: {test_acc}")
+print(f"Augmented Test Loss: {test_loss}")
