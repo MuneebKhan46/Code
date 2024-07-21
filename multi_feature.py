@@ -361,93 +361,262 @@ wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, batch_size=8, valid
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
-test_acc  = test_acc * 100
 
-print(f"Augmented Test Accuracy: {test_acc}")
-print(f"Augmented Test Loss: {test_loss}")
+def eval (model, test_pat, test_label):
+    test_loss, test_acc = model.evaluate(test_pat, test_label)
+    test_acc  = test_acc * 100
+    
+    predictions = model.predict(test_pat)
+    predicted_labels = np.argmax(predictions, axis=1)
+    
+    report = classification_report(test_label, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+    
+    conf_matrix = confusion_matrix(test_label, predicted_labels)
+    TN = conf_matrix[0, 0]
+    FP = conf_matrix[0, 1]
+    FN = conf_matrix[1, 0]
+    TP = conf_matrix[1, 1]
+    
+    total_class_0 = TN + FP
+    total_class_1 = TP + FN
+    correctly_predicted_0 = TN
+    correctly_predicted_1 = TP
+    
+    
+    accuracy_0 = (TN / total_class_0) * 100
+    accuracy_1 = (TP / total_class_1) * 100
+    
+    precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+    recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+    precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+    recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+    
+    
+    weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
+    weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
+    
+    if weighted_precision + weighted_recall > 0:
+        weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+    else:
+        weighted_f1_score = 0
+    
+    weighted_f1_score  = weighted_f1_score*100
+    weighted_precision = weighted_precision*100
+    weighted_recall    = weighted_recall*100
+    
+    macro_precision = (precision_0 + precision_1) / 2
+    macro_recall = (recall_0 + recall_1) / 2
+    
+    if macro_precision + macro_recall > 0:
+        macro_f1_score = 2 * (macro_precision * macro_recall) / (macro_precision + macro_recall)
+    else:
+        macro_f1_score = 0
+      
+    macro_f1_score  = macro_f1_score * 100
+    macro_precision = macro_precision * 100
+    macro_recall    = macro_recall * 100
+    
+    
+    TP_0 = total_class_0 * recall_0
+    TP_1 = total_class_1 * recall_1
+    FP_0 = total_class_0 * (1 - precision_0)
+    FP_1 = total_class_1 * (1 - precision_1)
+    FN_0 = total_class_0 * (1 - recall_0)
+    FN_1 = total_class_1 * (1 - recall_1)
+    
+    micro_precision = (TP_0 + TP_1) / (TP_0 + TP_1 + FP_0 + FP_1)
+    micro_recall = (TP_0 + TP_1) / (TP_0 + TP_1 + FN_0 + FN_1)
+    
+    if micro_precision + micro_recall > 0:
+        micro_f1_score = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall)
+    else:
+        micro_f1_score = 0
+    
+    
+    micro_f1_score  = micro_f1_score * 100
+    micro_precision = micro_precision * 100
+    micro_recall    = micro_recall * 100
+    
+    print("#########################################################################################################################################################################################################################################")
+    print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Macro Precision: {macro_precision:.4f}, Macro Recall={macro_recall:.4f}, Macro F1-score={macro_f1_score:.4f}, Micro precision: {micro_precision:.4f}, Micro Recall={micro_recall:.4f}, Micro F1-score={micro_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
 
-predictions = cnn_wcw_model.predict(X_test)
-predicted_labels = np.argmax(predictions, axis=1)
-report = classification_report(y_test, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
-
-conf_matrix = confusion_matrix(y_test, predicted_labels)
-TN = conf_matrix[0, 0]
-FP = conf_matrix[0, 1]
-FN = conf_matrix[1, 0]
-TP = conf_matrix[1, 1]
-
-total_class_0 = TN + FP
-total_class_1 = TP + FN
-correctly_predicted_0 = TN
-correctly_predicted_1 = TP
+     # save_metric_details(model_name, technique, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 
-accuracy_0 = (TN / total_class_0) * 100
-accuracy_1 = (TP / total_class_1) * 100
-
-precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
 
 
-weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
-weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
 
-if weighted_precision + weighted_recall > 0:
-    weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-else:
-    weighted_f1_score = 0
-
-weighted_f1_score  = weighted_f1_score*100
-weighted_precision = weighted_precision*100
-weighted_recall    = weighted_recall*100
-
-macro_precision = (precision_0 + precision_1) / 2
-macro_recall = (recall_0 + recall_1) / 2
-
-if macro_precision + macro_recall > 0:
-    macro_f1_score = 2 * (macro_precision * macro_recall) / (macro_precision + macro_recall)
-else:
-    macro_f1_score = 0
-  
-macro_f1_score  = macro_f1_score * 100
-macro_precision = macro_precision * 100
-macro_recall    = macro_recall * 100
+eval (cnn_wcw_model, X_test, y_test)
+eval (cnn_wcw_model, test_patches, test_labels)
 
 
-TP_0 = total_class_0 * recall_0
-TP_1 = total_class_1 * recall_1
-FP_0 = total_class_0 * (1 - precision_0)
-FP_1 = total_class_1 * (1 - precision_1)
-FN_0 = total_class_0 * (1 - recall_0)
-FN_1 = total_class_1 * (1 - recall_1)
-
-micro_precision = (TP_0 + TP_1) / (TP_0 + TP_1 + FP_0 + FP_1)
-micro_recall = (TP_0 + TP_1) / (TP_0 + TP_1 + FN_0 + FN_1)
-
-if micro_precision + micro_recall > 0:
-    micro_f1_score = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall)
-else:
-    micro_f1_score = 0
 
 
-micro_f1_score  = micro_f1_score * 100
-micro_precision = micro_precision * 100
-micro_recall    = micro_recall * 100
- 
-model_name = "CNN"
-technique = "Without Class Weight"
-# save_metric_details(model_name, technique, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
-print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Macro Precision: {macro_precision:.4f}, Macro Recall={macro_recall:.4f}, Macro F1-score={macro_f1_score:.4f}, Micro precision: {micro_precision:.4f}, Micro Recall={micro_recall:.4f}, Micro F1-score={micro_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
-
-
-#########################################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################################
-
-# test_loss, test_acc = cnn_wcw_model.evaluate(test_patches, test_labels)
+# test_loss, test_acc = cnn_wcw_model.evaluate(X_test, y_test)
 # test_acc  = test_acc * 100
 
-# print(f"Test Accuracy: {test_acc}")
-# print(f"Test Loss: {test_loss}")
+# print(f"Augmented Test Accuracy: {test_acc}")
+# print(f"Augmented Test Loss: {test_loss}")
+
+# predictions = cnn_wcw_model.predict(X_test)
+# predicted_labels = np.argmax(predictions, axis=1)
+# report = classification_report(y_test, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+
+# conf_matrix = confusion_matrix(y_test, predicted_labels)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
+
+# total_class_0 = TN + FP
+# total_class_1 = TP + FN
+# correctly_predicted_0 = TN
+# correctly_predicted_1 = TP
+
+
+# accuracy_0 = (TN / total_class_0) * 100
+# accuracy_1 = (TP / total_class_1) * 100
+
+# precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+# recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+# precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+# recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+
+
+# weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
+# weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
+
+# if weighted_precision + weighted_recall > 0:
+#     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+# else:
+#     weighted_f1_score = 0
+
+# weighted_f1_score  = weighted_f1_score*100
+# weighted_precision = weighted_precision*100
+# weighted_recall    = weighted_recall*100
+
+# macro_precision = (precision_0 + precision_1) / 2
+# macro_recall = (recall_0 + recall_1) / 2
+
+# if macro_precision + macro_recall > 0:
+#     macro_f1_score = 2 * (macro_precision * macro_recall) / (macro_precision + macro_recall)
+# else:
+#     macro_f1_score = 0
+  
+# macro_f1_score  = macro_f1_score * 100
+# macro_precision = macro_precision * 100
+# macro_recall    = macro_recall * 100
+
+
+# TP_0 = total_class_0 * recall_0
+# TP_1 = total_class_1 * recall_1
+# FP_0 = total_class_0 * (1 - precision_0)
+# FP_1 = total_class_1 * (1 - precision_1)
+# FN_0 = total_class_0 * (1 - recall_0)
+# FN_1 = total_class_1 * (1 - recall_1)
+
+# micro_precision = (TP_0 + TP_1) / (TP_0 + TP_1 + FP_0 + FP_1)
+# micro_recall = (TP_0 + TP_1) / (TP_0 + TP_1 + FN_0 + FN_1)
+
+# if micro_precision + micro_recall > 0:
+#     micro_f1_score = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall)
+# else:
+#     micro_f1_score = 0
+
+
+# micro_f1_score  = micro_f1_score * 100
+# micro_precision = micro_precision * 100
+# micro_recall    = micro_recall * 100
+ 
+# model_name = "CNN"
+# technique = "Without Class Weight"
+# # save_metric_details(model_name, technique, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+# print("#########################################################################################################################################################################################################################################")
+# print(f"Accuracy: {test_acc:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Macro Precision: {macro_precision:.4f}, Macro Recall={macro_recall:.4f}, Macro F1-score={macro_f1_score:.4f}, Micro precision: {micro_precision:.4f}, Micro Recall={micro_recall:.4f}, Micro F1-score={micro_f1_score:.4f}, Loss={test_loss:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
+
+
+# #########################################################################################################################################################################################################################################
+# #########################################################################################################################################################################################################################################
+
+# test_los, test_ac = cnn_wcw_model.evaluate(test_patches, test_labels)
+# test_ac  = test_ac * 100
+
+# print(f"Test Accuracy: {test_ac}")
+# print(f"Test Loss: {test_los}")
+
+# predictions = cnn_wcw_model.predict(test_patches)
+# predicted_labels = np.argmax(predictions, axis=1)
+# report = classification_report(test_labels, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+
+# conf_matrix = confusion_matrix(test_labels, predicted_labels)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
+
+# total_class_0 = TN + FP
+# total_class_1 = TP + FN
+# correctly_predicted_0 = TN
+# correctly_predicted_1 = TP
+
+
+# accuracy_0 = (TN / total_class_0) * 100
+# accuracy_1 = (TP / total_class_1) * 100
+
+# precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+# recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+# precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+# recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+
+
+# weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
+# weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
+
+# if weighted_precision + weighted_recall > 0:
+#     weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+# else:
+#     weighted_f1_score = 0
+
+# weighted_f1_score  = weighted_f1_score*100
+# weighted_precision = weighted_precision*100
+# weighted_recall    = weighted_recall*100
+
+# macro_precision = (precision_0 + precision_1) / 2
+# macro_recall = (recall_0 + recall_1) / 2
+
+# if macro_precision + macro_recall > 0:
+#     macro_f1_score = 2 * (macro_precision * macro_recall) / (macro_precision + macro_recall)
+# else:
+#     macro_f1_score = 0
+  
+# macro_f1_score  = macro_f1_score * 100
+# macro_precision = macro_precision * 100
+# macro_recall    = macro_recall * 100
+
+
+# TP_0 = total_class_0 * recall_0
+# TP_1 = total_class_1 * recall_1
+# FP_0 = total_class_0 * (1 - precision_0)
+# FP_1 = total_class_1 * (1 - precision_1)
+# FN_0 = total_class_0 * (1 - recall_0)
+# FN_1 = total_class_1 * (1 - recall_1)
+
+# micro_precision = (TP_0 + TP_1) / (TP_0 + TP_1 + FP_0 + FP_1)
+# micro_recall = (TP_0 + TP_1) / (TP_0 + TP_1 + FN_0 + FN_1)
+
+# if micro_precision + micro_recall > 0:
+#     micro_f1_score = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall)
+# else:
+#     micro_f1_score = 0
+
+
+# micro_f1_score  = micro_f1_score * 100
+# micro_precision = micro_precision * 100
+# micro_recall    = micro_recall * 100
+ 
+# model_name = "CNN"
+# technique = "Without Class Weight"
+# # save_metric_details(model_name, technique, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+# print("#########################################################################################################################################################################################################################################")
+# print(f"Accuracy: {test_ac:.4f} | precision: {weighted_precision:.4f}, Recall={weighted_recall:.4f}, F1-score={weighted_f1_score:.4f}, Macro Precision: {macro_precision:.4f}, Macro Recall={macro_recall:.4f}, Macro F1-score={macro_f1_score:.4f}, Micro precision: {micro_precision:.4f}, Micro Recall={micro_recall:.4f}, Micro F1-score={micro_f1_score:.4f}, Loss={test_los:.4f}, N.G.A Accuracy={accuracy_0:.4f}, G.A Accuracy={accuracy_1:.4f}")
+
