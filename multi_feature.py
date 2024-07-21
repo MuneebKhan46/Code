@@ -1,7 +1,7 @@
 import os
 from os import path
 import csv
-import cv2
+
 import textwrap
 import numpy as np
 import pandas as pd
