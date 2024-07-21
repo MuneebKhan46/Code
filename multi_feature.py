@@ -310,9 +310,9 @@ ghosting_patches = train_patches[train_labels == 1]
 # if ghosting_patches.ndim == 3:
 #     ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
 # else:
-#     ghosting_patches_expanded = ghosting_patches
+    # ghosting_patches_expanded = ghosting_patches
 
-
+ghosting_patches_expanded = ghosting_patches
 augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=12)
 
 augmented_images_np = np.stack(augmented_images)
