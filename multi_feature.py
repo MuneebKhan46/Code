@@ -199,9 +199,7 @@ combine_features = combine_features(diff_patches, normalized_diff_patches, psnr_
 
 print(f" Difference Map Shape: {diff_patches[0].shape}")
 print(f" Normalized Difference Map Shape: {normalized_diff_patches[0].shape}")
-print(f" PSNR Map Shape: {psnr_values[0].shape}")
-print(f" SSIM Map Shape: {ssim_values[0].shape}")
-print(f" Combine Feature Map Shape: {combined_features[0].shape}")
+print(f" Combine Feature Map Shape: {combine_features[0].shape}")
 
 
 combined_features_np, labels_np = prepare_data(combined_features, labels)
