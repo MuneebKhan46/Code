@@ -450,11 +450,11 @@ def eval (model, test_pat, test_label):
 # eval (cnn_wcw_model, test_patches, test_labels)
 
 print(f"Shape of test_pat: {test_patches.shape}")
-    print(f"Shape of test_label: {test_labels.shape}")
+print(f"Shape of test_label: {test_labels.shape}")
     
     # Check the model's expected input shape
-    expected_input_shape = cnn_wcw_model.input_shape
-    print(f"Expected input shape: {expected_input_shape}")
+expected_input_shape = cnn_wcw_model.input_shape
+print(f"Expected input shape: {expected_input_shape}")
 
 
 
