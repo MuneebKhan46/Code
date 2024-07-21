@@ -449,7 +449,9 @@ def eval (model, test_pat, test_label):
 
 
 # eval (cnn_wcw_model, X_test, y_test)
-# eval (cnn_wcw_model, test_patches, test_labels)
+
+test_patches = np.expand_dims(test_patches, axis=-1)
+eval (cnn_wcw_model, test_patches, test_labels)
 
 print(f"Shape of test_pat: {test_patches.shape}")
 print(f"Shape of test_label: {test_labels.shape}")
@@ -458,7 +460,7 @@ print(f"Shape of test_label: {test_labels.shape}")
 expected_input_shape = cnn_wcw_model.input_shape
 print(f"Expected input shape: {expected_input_shape}")
 
-if test_pat.dtype != np.float32:
+if test_patches.dtype != np.float32:
     print(f"Converting test_pat to float32")
     # test_pat = test_pat.astype(np.float32)
     
