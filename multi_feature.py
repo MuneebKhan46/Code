@@ -272,8 +272,8 @@ test_non_ghosting = non_ghosting_artifacts[:num_test_non_ghosting]
 train_dataset = train_ghosting + train_non_ghosting
 test_dataset = test_ghosting + test_non_ghosting
 
-train_patches, train_labels, train_image_names, train_patch_numbers = zip(*train_dataset)
-test_patches, test_labels, test_image_names, test_patch_numbers = zip(*test_dataset)
+train_patches, train_labels  = zip(*train_dataset)
+test_patches, test_labels = zip(*test_dataset)
 
 train_patches = np.array(train_patches)
 train_labels = np.array(train_labels)
