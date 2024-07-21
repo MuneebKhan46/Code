@@ -110,33 +110,32 @@ def calculate_normalized_difference(original, denoised):
     epsilon = 1e-6
     return [(denoised_patch.astype(np.float32) - orig_patch.astype(np.float32)) / (orig_patch.astype(np.float32) + denoised_patch.astype(np.float32) + epsilon) for orig_patch, denoised_patch in zip(original, denoised)]
 
-def calculate_psnr(original, denoised):
-    return [peak_signal_noise_ratio(orig_patch, denoised_patch, data_range=255) for orig_patch, denoised_patch in zip(original, denoised)]
+# def calculate_psnr(original, denoised):
+#     return [peak_signal_noise_ratio(orig_patch, denoised_patch, data_range=255) for orig_patch, denoised_patch in zip(original, denoised)]
 
-def calculate_ssim(original, denoised):
-    return [structural_similarity(orig_patch, denoised_patch, data_range=255) for orig_patch, denoised_patch in zip(original, denoised)]
+# def calculate_ssim(original, denoised):
+#     return [structural_similarity(orig_patch, denoised_patch, data_range=255) for orig_patch, denoised_patch in zip(original, denoised)]
 
+#########################################################################################################################################################################################################################################
 
-# def combine_features(diff_patches, normalized_diff_patches):
-#     combined_features = [np.stack((diff, norm_diff), axis=-1) for diff, norm_diff in zip(diff_patches, normalized_diff_patches)]
+def combine_features(diff_patches, normalized_diff_patches):
+    combined_features = [np.stack((diff, norm_diff), axis=-1) for diff, norm_diff in zip(diff_patches, normalized_diff_patches)]
+    return combined_features
+
+# def combine_features(diff_patches, normalized_diff_patches, psnr_values, ssim_values):
+#     combined_features = []
+#     for i in range(len(diff_patches)):
+#         feature_map = np.stack((diff_patches[i], normalized_diff_patches[i]), axis=-1)
+#         psnr_map = np.full((224, 224, 1), psnr_values[i])
+#         ssim_map = np.full((224, 224, 1), ssim_values[i])
+#         combined_feature = np.concatenate((feature_map, psnr_map, ssim_map), axis=-1)
+#         combined_features.append(combined_feature)
 #     return combined_features
 
 #########################################################################################################################################################################################################################################
 
-def combine_features(diff_patches, normalized_diff_patches, psnr_values, ssim_values):
-    combined_features = []
-    for i in range(len(diff_patches)):
-        feature_map = np.stack((diff_patches[i], normalized_diff_patches[i]), axis=-1)
-        psnr_map = np.full((224, 224, 1), psnr_values[i])
-        ssim_map = np.full((224, 224, 1), ssim_values[i])
-        combined_feature = np.concatenate((feature_map, psnr_map, ssim_map), axis=-1)
-        combined_features.append(combined_feature)
-    return combined_features
-
-#########################################################################################################################################################################################################################################
-
 def prepare_data(data, labels):
-    data = np.array(data).astype('float32')
+    data = np.array(data).astype('float32') / 255.0
     lbl = np.array(labels)
     return data, lbl
 
@@ -199,7 +198,7 @@ def augmented_images(data, num_augmented_images_per_original):
 
 #########################################################################################################################################################################################################################################
 
-def create_cnn_model(input_shape=(224, 224, 4)):
+def create_cnn_model(input_shape=(224, 224, 2)):
     model = Sequential()
     model.add(Conv2D(32, kernel_size=(3, 3), activation='elu', input_shape=input_shape))
     model.add(Conv2D(32, kernel_size=(3, 3), activation='elu'))
@@ -223,10 +222,12 @@ original_patches, denoised_patches, labels, denoised_image_names, all_patch_numb
 
 diff_patches = calculate_difference(original_patches, denoised_patches)
 normalized_diff_patches = calculate_normalized_difference(original_patches, denoised_patches)
-psnr_values = calculate_psnr(original_patches, denoised_patches)
-ssim_values =calculate_ssim( original_patches, denoised_patches)
 
-combine_features = combine_features(diff_patches, normalized_diff_patches, psnr_values, ssim_values)
+# psnr_values = calculate_psnr(original_patches, denoised_patches)
+# ssim_values =calculate_ssim( original_patches, denoised_patches)
+
+combine_features = combine_features(diff_patches, normalized_diff_patches)
+# combine_features = combine_features(diff_patches, normalized_diff_patches, psnr_values, ssim_values)
 
 print(f" Difference Map Shape: {diff_patches[0].shape}")
 print(f" Normalized Difference Map Shape: {normalized_diff_patches[0].shape}")
