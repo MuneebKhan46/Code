@@ -321,7 +321,11 @@ augmented_labels = np.ones(len(augmented_images_np))
 # train_patches_expanded = np.expand_dims(train_patches, axis=-1)
 # augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
 
-train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np_expanded), axis=0)
+# train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np_expanded), axis=0)
+# train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
+
+
+train_patches_combined = np.concatenate((train_patches, augmented_images_np), axis=0)
 train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
 
 print(f" Total Augmented Patches: {len(train_patches_combined)}")
