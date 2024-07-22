@@ -105,9 +105,8 @@ def load_data_from_csv(csv_path, original_dir, denoised_dir):
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-def calculate_normalized_difference(original, denoised):
-  epsilon = 1e-6
-  return [(denoised_patch.astype(np.float32) - orig_patch.astype(np.float32)) / (orig_patch.astype(np.float32) + denoised_patch.astype(np.float32) + epsilon) for orig_patch, denoised_patch in zip(original, denoised)]
+def calculate_difference(original, ghosting):
+    return [ghost.astype(np.int16) - orig.astype(np.int16) for orig, ghost in zip(original, ghosting)]
 
 
 #########################################################################################################################################################################################################################################
@@ -247,13 +246,13 @@ test_dataset = test_ghosting + test_non_ghosting
 train_patches, train_labels, train_image_names, train_patch_numbers = zip(*train_dataset)
 test_patches, test_labels, test_image_names, test_patch_numbers = zip(*test_dataset)
 
-train_patches = np.array(train_patches)
+train_patches = (np.array(train_patches) + 1) / 2
 train_labels = np.array(train_labels)
 
 print(f" Total Train Patches: {len(train_patches)}")
 print(f" Total Train Labels: {len(train_labels)}")
 
-test_patches = np.array(test_patches)
+test_patches = (np.array(test_patches) + 1) / 2
 test_labels = np.array(test_labels)
 
 print(f" Total Test Patches: {len(test_patches)}")
@@ -761,7 +760,7 @@ misclassified_df.to_csv(misclass_En_csv_path, index=False)
 
 
 #########################################################################################################################################################################################################################################
-## PRECISION ENSEMBLE 
+## VOTE ENSEMBLE 
 #########################################################################################################################################################################################################################################
 
 predictions = []
@@ -778,6 +777,13 @@ voted_predictions = np.array(voted_predictions)
 
 true_labels = test_labels
 
+
+print("#########################################################################################################################################################################################################################################")
+
+
 print('prediction based on vote')
 test_acc = accuracy_score(true_labels, voted_predictions)
 print('test_acc =', test_acc)
+
+test_loss = log_loss(true_labels, voted_predictions)
+print(f"Test Loss: {test_loss:.4f}")
