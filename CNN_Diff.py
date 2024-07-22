@@ -27,9 +27,10 @@ from tensorflow.keras.optimizers import Adam
 models = []
 class_1_accuracies = []
 
-original_dir = '/Dataset/dataset_patch_raw_ver3/original'
-denoised_dir = '/Dataset/dataset_patch_raw_ver3/denoised'
-csv_path     = '/Dataset/patch_label_median_verified3.csv'
+original_dir = '/Dataset/m-gaid-dataset-high-frequency/original'
+denoised_dir = '//Dataset/m-gaid-dataset-high-frequency/denoised'
+csv_path     = '/Dataset/m-gaid-dataset-high-frequency/classified_label.csv '
+
 result_file_path = "/Code/Results/Overall_result.csv"
 
 #########################################################################################################################################################################################################################################
