@@ -209,7 +209,7 @@ def create_cnn_model(input_shape=(224,224, 1)):
 
 original_patches, denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, original_dir, denoised_dir)
 
-diff_patches = calculate_normalized_difference(original_patches, denoised_patches)
+diff_patches = calculate_difference(original_patches, denoised_patches)
 diff_patches_np, labels_np = prepare_data(diff_patches, labels)
 
 combined = list(zip(diff_patches_np, labels_np, denoised_image_names, all_patch_numbers))
