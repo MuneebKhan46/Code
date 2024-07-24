@@ -519,7 +519,7 @@ macro_recall    = macro_recall * 100
 
 micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
 
-micro_f1_score  = micro_f1_score * 
+micro_f1_score  = micro_f1_score * 100
 micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
 
@@ -589,7 +589,7 @@ macro_recall    = macro_recall * 100
 
 micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
 
-micro_f1_score  = micro_f1_score * 
+micro_f1_score  = micro_f1_score * 100
 micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
 
