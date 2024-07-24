@@ -27,8 +27,8 @@ models = []
 class_1_accuracies = []
 
 original_dir = '/Dataset/m-gaid-dataset-high-frequency/original'
-denoised_dir = '//Dataset/m-gaid-dataset-high-frequency/denoised'
-csv_path     = '/Dataset/m-gaid-dataset-high-frequency/classified_label.csv '
+denoised_dir = '/Dataset/m-gaid-dataset-high-frequency/denoised'
+csv_path     = '/Dataset/m-gaid-dataset-high-frequency/classified_label.csv'
 
 result_file_path = "/Project/Results/Result.csv"
 
