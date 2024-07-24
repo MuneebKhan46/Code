@@ -313,7 +313,7 @@ opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = create_cnn_model()
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
-wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Project/Models/CNN_Diff_wCW_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Project/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
@@ -337,7 +337,7 @@ opt = Adam(learning_rate=2e-05)
 cnn_cw_model = create_cnn_model()
 cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-cw_model_checkpoint = ModelCheckpoint(filepath='/Project/Models/CNN_Diff_CW_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cw_model_checkpoint = ModelCheckpoint(filepath='/Project/Models/CNN_Diff_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
 cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
@@ -374,7 +374,7 @@ cnn_cb_model = create_cnn_model()
 cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 
-cb_model_checkpoint = ModelCheckpoint(filepath='/Project/Models/CNN_Diff_CB_SIGMOID.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cb_model_checkpoint = ModelCheckpoint(filepath='/Project/Models/CNN_Diff_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
 cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
@@ -486,13 +486,13 @@ eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Differen
 ## PRECISION ENSEMBLE 
 #########################################################################################################################################################################################################################################
 
-test_patches = np.array(test_patches)
-test_patches = test_patches.reshape((-1, 224, 224, 1))
+# test_patches = np.array(test_patches)
+# test_patches = test_patches.reshape((-1, 224, 224, 1))
 
-test_labels = np.array(test_labels)
+# test_labels = np.array(test_labels)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
-csv_file_path = '/Project/Models/Weights_SIGMOID.csv'
+csv_file_path = '/Project/Models/CNN_Weights.csv'
 np.savetxt(csv_file_path, weights, delimiter=',')
 
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
@@ -501,37 +501,39 @@ predicted_classes = (weighted_predictions > 0.5).astype(int)
 true_labels = test_labels.ravel()
 
 test_acc = accuracy_score(true_labels, predicted_classes) * 100
-
-weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
 test_loss = log_loss(true_labels, weighted_predictions)
 
-conf_matrix = confusion_matrix(true_labels, predicted_classes)
-TN = conf_matrix[0, 0]
-FP = conf_matrix[0, 1]
-FN = conf_matrix[1, 0]
-TP = conf_matrix[1, 1]
+weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
 
-# Class-wise accuracy
-total_class_0 = TN + FN
-total_class_1 = TP + FP
-accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
-
-# Scale metrics
 weighted_precision *= 100
 weighted_recall *= 100
 weighted_f1_score *= 100
 
 
+macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='macro')
+
+macro_f1_score  = macro_f1_score * 100
+macro_precision = macro_precision * 100
+macro_recall    = macro_recall * 100
+
+
+micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
+
+micro_f1_score  = micro_f1_score * 
+micro_precision = micro_precision * 100
+micro_recall    = micro_recall * 100
+
+
 model_name = "CNN"
 feature_name = "Difference Map"
 technique = "Precision Ensemble"
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-print(f"Accuracy: {test_acc:.4f} | Precision: {weighted_precision:.4f}, Recall: {weighted_recall:.4f}, F1-score: {weighted_f1_score:.4f}, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.4f}, G.A Accuracy: {accuracy_1:.4f}")
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 
-misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_Diff_SIGMOID_misclassified_patches.csv'
+misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_Diff_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
@@ -557,7 +559,7 @@ misclassified_df.to_csv(misclass_En_csv_path, index=False)
 
 
 #########################################################################################################################################################################################################################################
-## PRECISION ENSEMBLE 
+## AVERAGE ENSEMBLE 
 #########################################################################################################################################################################################################################################
 
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
@@ -568,56 +570,39 @@ true_labels = test_labels.ravel()
 
 
 test_acc = accuracy_score(true_labels, predicted_classes) * 100
-print(f"Test Accuracy: {test_acc:.2f}%")
+test_loss = log_loss(true_labels, weighted_predictions)
 
-test_loss = log_loss(true_labels, average_predictions)
-print(f"Test Loss: {test_loss:.4f}")
+weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
 
-report = classification_report(true_labels, predicted_classes, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
-
-conf_matrix = confusion_matrix(true_labels, predicted_classes)
-TN = conf_matrix[0, 0]
-FP = conf_matrix[0, 1]
-FN = conf_matrix[1, 0]
-TP = conf_matrix[1, 1]
-
-# Class-wise accuracy
-total_class_0 = TN + FP
-total_class_1 = TP + FN
-accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
-
-# Precision and recall for each class
-precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
-
-# Weighted precision, recall, and F1 score
-total_samples = total_class_0 + total_class_1
-weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / total_samples
-weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / total_samples
-
-if weighted_precision + weighted_recall > 0:
-    weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-else:
-    weighted_f1_score = 0
-
-weighted_f1_score *= 100
 weighted_precision *= 100
 weighted_recall *= 100
+weighted_f1_score *= 100
 
-# Print metrics
-print(f"Accuracy: {test_acc:.2f}% | Precision: {weighted_precision:.2f}%, Recall: {weighted_recall:.2f}%, F1-score: {weighted_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
-# Save metrics to a file (assuming save_metric_details is defined elsewhere)
+macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='macro')
+
+macro_f1_score  = macro_f1_score * 100
+macro_precision = macro_precision * 100
+macro_recall    = macro_recall * 100
+
+
+micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
+
+micro_f1_score  = micro_f1_score * 
+micro_precision = micro_precision * 100
+micro_recall    = micro_recall * 100
+
+
+print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+
+
 model_name = "CNN"
 feature_name = "Difference Map"
 technique = "Average Ensemble"
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-# Save misclassified patches to CSV
-misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_Diff_SIGMOID_misclassified_patches.csv'
+
+misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_Diff_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
