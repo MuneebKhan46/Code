@@ -3,7 +3,6 @@ import numpy as np
 import os
 from os import path
 import csv
-# import cv2
 import textwrap
 import pandas as pd
 import resource
