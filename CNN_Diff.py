@@ -118,7 +118,7 @@ def prepare_data(data, labels):
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-def save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path):
+def save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path):
     function = "Sigmoid"
     if path.exists(result_file_path):
     
@@ -129,31 +129,42 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
             'Feature Map' : [feature_name],
             'Function' : [function],
             'Overall Accuracy': [test_acc],
-            'Precision': [weighted_precision],
-            'Recall': [weighted_recall],
-            'F1-Score': [weighted_f1_score],
+            'Weight Precision': [weighted_precision],
+            'Weight Recall': [weighted_recall],
+            'Weight F1-Score': [weighted_f1_score],
+            'Macro Precision': [macro_precision],
+            'Macro Recall': [macro_recall],
+            'Macro F1-Score': [macro_f1_score],
+            'Micro Precision': [micro_precision],
+            'Micro Recall': [micro_recall],
+            'Micro F1-Score': [micro_f1_score],
             'Loss': [test_loss],
             'Non-Ghosting Artifacts Accuracy': [accuracy_0],
             'Ghosting Artifacts Accuracy': [accuracy_1]
         })
         df_metrics = pd.concat([df_existing, df_new_row], ignore_index=True)
     else:
-    
+ 
         df_metrics = pd.DataFrame({
             'Model': [model_name],
-            'Technique' : [technique],            
+            'Technique' : [technique],
             'Feature Map' : [feature_name],
             'Function' : [function],
             'Overall Accuracy': [test_acc],
-            'Precision': [weighted_precision],
-            'Recall': [weighted_recall],
-            'F1-Score': [weighted_f1_score],
+            'Weight Precision': [weighted_precision],
+            'Weight Recall': [weighted_recall],
+            'Weight F1-Score': [weighted_f1_score],
+            'Macro Precision': [macro_precision],
+            'Macro Recall': [macro_recall],
+            'Macro F1-Score': [macro_f1_score],
+            'Micro Precision': [micro_precision],
+            'Micro Recall': [micro_recall],
+            'Micro F1-Score': [micro_f1_score],
             'Loss': [test_loss],
             'Non-Ghosting Artifacts Accuracy': [accuracy_0],
             'Ghosting Artifacts Accuracy': [accuracy_1]
         })
 
-    
     df_metrics.to_csv(result_file_path, index=False)
 
 #########################################################################################################################################################################################################################################
