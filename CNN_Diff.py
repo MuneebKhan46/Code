@@ -30,7 +30,7 @@ original_dir = '/ghosting-artifact-metric/dataset/dataset_patch_raw_ver3/origina
 denoised_dir = '/ghosting-artifact-metric/dataset/dataset_patch_raw_ver3/denoised'
 csv_path     = '/ghosting-artifact-metric/dataset/patch_label_median_verified3.csv'
 
-result_file_path = "/Project/Results/Result.csv"
+result_file_path = "/ghosting-artifact-metric/Project/Results/Result.csv"
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -313,7 +313,7 @@ opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = create_cnn_model()
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
-wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/Project/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_Diff_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=1, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
@@ -337,7 +337,7 @@ opt = Adam(learning_rate=2e-05)
 cnn_cw_model = create_cnn_model()
 cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-cw_model_checkpoint = ModelCheckpoint(filepath='/Project/Models/CNN_Diff_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_Diff_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
 cw_history = cnn_cw_model.fit(X_train, y_train, epochs=1, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
@@ -374,7 +374,7 @@ cnn_cb_model = create_cnn_model()
 cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 
-cb_model_checkpoint = ModelCheckpoint(filepath='/Project/Models/CNN_Diff_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_Diff_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
 cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=1, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
@@ -492,7 +492,7 @@ eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Differen
 # test_labels = np.array(test_labels)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
-csv_file_path = '/Project/Models/CNN_Weights.csv'
+csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_Weights.csv'
 np.savetxt(csv_file_path, weights, delimiter=',')
 
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
@@ -534,7 +534,7 @@ print("#########################################################################
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 
-misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_Diff_misclassified_patches.csv'
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_Diff_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
@@ -603,7 +603,7 @@ technique = "Average Ensemble"
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 
-misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_Diff_misclassified_patches.csv'
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_Diff_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
