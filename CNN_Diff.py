@@ -523,6 +523,17 @@ micro_f1_score  = micro_f1_score * 100
 micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
 
+conf_matrix = confusion_matrix(true_labels, predicted_classes)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
+
+total_class_0 = TN + FN
+total_class_1 = TP + FP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
 
 model_name = "CNN"
 feature_name = "Difference Map"
@@ -592,6 +603,18 @@ micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_suppo
 micro_f1_score  = micro_f1_score * 100
 micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
+
+conf_matrix = confusion_matrix(true_labels, predicted_classes)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
+
+
+total_class_0 = TN + FN
+total_class_1 = TP + FP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
 
 print("####################################################################################################################################################################################################")
@@ -667,6 +690,19 @@ micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_suppo
 micro_f1_score  = micro_f1_score * 100
 micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
+
+conf_matrix = confusion_matrix(true_labels, voted_predictions)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
+
+# Class-wise accuracy
+total_class_0 = TN + FN
+total_class_1 = TP + FP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
 
 print("####################################################################################################################################################################################################")
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}")
