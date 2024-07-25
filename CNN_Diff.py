@@ -530,7 +530,7 @@ technique = "Precision Ensemble"
 
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-print("#########################################################################################################################################################################################################################################")
+print("####################################################################################################################################################################################################")
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 
@@ -594,7 +594,7 @@ micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
 
 
-print("#########################################################################################################################################################################################################################################")
+print("####################################################################################################################################################################################################")
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 model_name = "CNN"
@@ -615,6 +615,80 @@ for index in misclassified_indexes:
 
     probability_non_ghosting = 1 - average_predictions[index]
     probability_ghosting = average_predictions[index]
+    
+    misclassified_data.append([
+        denoised_image_name, patch_number, true_label, predicted_label,
+        probability_non_ghosting, probability_ghosting
+    ])
+
+misclassified_df = pd.DataFrame(misclassified_data, columns=[
+    'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
+    'Probability Non-Ghosting', 'Probability Ghosting'
+])
+misclassified_df.to_csv(misclass_En_csv_path, index=False)
+
+
+
+#########################################################################################################################################################################################################################################
+## VOTE ENSEMBLE 
+#########################################################################################################################################################################################################################################
+
+predictions = []
+for model in models:
+    pred = model.predict(test_patches)
+    pred_class = (pred[:, 0] > 0.5).astype(int)
+    predictions.append(pred_class)
+predictions = np.array(predictions)
+
+voted_predictions = []
+for pred in predictions.T:
+    voted_predictions.append(mode(pred)[0][0])
+voted_predictions = np.array(voted_predictions)
+
+true_labels = test_labels.ravel()
+
+test_acc = accuracy_score(true_labels, voted_predictions) * 100
+test_loss = log_loss(true_labels, voted_predictions)
+
+weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='weighted')
+
+weighted_precision *= 100
+weighted_recall *= 100
+weighted_f1_score *= 100
+
+macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='macro')
+
+macro_f1_score  = macro_f1_score * 100
+macro_precision = macro_precision * 100
+macro_recall    = macro_recall * 100
+
+micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='micro')
+
+micro_f1_score  = micro_f1_score * 100
+micro_precision = micro_precision * 100
+micro_recall    = micro_recall * 100
+
+print("####################################################################################################################################################################################################")
+print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}")
+
+model_name = "CNN"
+feature_name = "Difference Map"
+technique = "Vote Based Ensemble"
+
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_Diff_misclassified_patches.csv'
+misclassified_indexes = np.where(voted_predictions != true_labels)[0]
+
+misclassified_data = []
+for index in misclassified_indexes:
+    denoised_image_name = test_image_names[index]
+    patch_number = test_patch_numbers[index]
+    true_label = true_labels[index]
+    predicted_label = voted_predictions[index]
+
+    probability_non_ghosting = 1 - (np.sum(predictions[:, index]) / len(models))
+    probability_ghosting = np.sum(predictions[:, index]) / len(models)
     
     misclassified_data.append([
         denoised_image_name, patch_number, true_label, predicted_label,
