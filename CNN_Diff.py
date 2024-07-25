@@ -7,7 +7,8 @@ import textwrap
 import pandas as pd
 import resource
 from tensorflow.keras.regularizers import l1
-from statistics import mode
+from scipy.stats import mode
+
 from tensorflow import keras
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import plot_model
@@ -665,10 +666,7 @@ for model in models:
     predictions.append(pred_class)
 predictions = np.array(predictions)
 
-voted_predictions = []
-for pred in predictions.T:
-    voted_predictions.append(mode(pred)[0][0])
-voted_predictions = np.array(voted_predictions)
+voted_predictions = mode(predictions, axis=0)[0].flatten()
 
 true_labels = test_labels.ravel()
 
@@ -705,9 +703,8 @@ total_class_1 = TP + FP
 accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
 accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-
 print("####################################################################################################################################################################################################")
-print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}")
+print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 model_name = "CNN"
 feature_name = "Difference Map"
