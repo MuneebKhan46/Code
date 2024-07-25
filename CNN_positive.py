@@ -8,6 +8,7 @@ import pandas as pd
 import resource
 from tensorflow.keras.regularizers import l1
 
+from scipy.stats import mode
 from tensorflow import keras
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import plot_model
@@ -383,20 +384,11 @@ cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, clas
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 # Testing
-
-# X_test = np.array(X_test)
-X_test = X_test.reshape((-1, 224, 224, 1))
-
 #########################################################################################################################################################################################################################################
-## Without Class Weight
-#########################################################################################################################################################################################################################################
-
-#########################################################################################################################################################################################################################################
-## Without Class Weight
 #########################################################################################################################################################################################################################################
 
 
-def eval (model, test_pat, test_label, model_name, technique):
+def eval (model, test_pat, test_label, model_name, feature_name, technique):
     
     test_loss, test_acc = model.evaluate(test_pat, test_label)
     test_acc  = test_acc * 100
@@ -472,9 +464,9 @@ def eval (model, test_pat, test_label, model_name, technique):
     micro_precision = micro_precision * 100
     micro_recall    = micro_recall * 100
     
-    print("#########################################################################################################################################################################################################################################")
+    print("#############################################################################################################################################################################")
     print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
-    save_metric_details(model_name, technique, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+    save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
     class_1_precision = micro_precision
     models.append(model)
@@ -491,13 +483,13 @@ eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Positive
 ## PRECISION ENSEMBLE 
 #########################################################################################################################################################################################################################################
 
-# test_patches = np.array(test_patches)
-# test_patches = test_patches.reshape((-1, 224, 224, 1))
+test_patches = np.array(test_patches)
+test_patches = test_patches.reshape((-1, 224, 224, 1))
 
-# test_labels = np.array(test_labels)
+test_labels = np.array(test_labels)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
-csv_file_path = '/Project/Models/CNN_Weights.csv'
+csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_Positive_Weights.csv'
 np.savetxt(csv_file_path, weights, delimiter=',')
 
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
@@ -528,18 +520,29 @@ micro_f1_score  = micro_f1_score * 100
 micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
 
+conf_matrix = confusion_matrix(true_labels, predicted_classes)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
+
+total_class_0 = TN + FN
+total_class_1 = TP + FP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
 
 model_name = "CNN"
-feature_name = "Positive  Difference Map"
+feature_name = "Positive Difference Map"
 technique = "Precision Ensemble"
 
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-print("#########################################################################################################################################################################################################################################")
+print("####################################################################################################################################################################################################")
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 
-misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_POSITIVE_misclassified_patches.csv'
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_Positive_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
@@ -577,6 +580,8 @@ true_labels = test_labels.ravel()
 
 test_acc = accuracy_score(true_labels, predicted_classes) * 100
 test_loss = log_loss(true_labels, weighted_predictions)
+print(test_acc)
+
 
 weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
 
@@ -598,8 +603,20 @@ micro_f1_score  = micro_f1_score * 100
 micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
 
+conf_matrix = confusion_matrix(true_labels, predicted_classes)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
 
-print("#########################################################################################################################################################################################################################################")
+
+total_class_0 = TN + FN
+total_class_1 = TP + FP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
+
+print("####################################################################################################################################################################################################")
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 model_name = "CNN"
@@ -608,7 +625,7 @@ technique = "Average Ensemble"
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 
-misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_POSITIVE_misclassified_patches.csv'
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_Positive_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
@@ -645,10 +662,7 @@ for model in models:
     predictions.append(pred_class)
 predictions = np.array(predictions)
 
-voted_predictions = []
-for pred in predictions.T:
-    voted_predictions.append(mode(pred)[0][0])
-voted_predictions = np.array(voted_predictions)
+voted_predictions = mode(predictions, axis=0)[0].flatten()
 
 true_labels = test_labels.ravel()
 
@@ -673,8 +687,20 @@ micro_f1_score  = micro_f1_score * 100
 micro_precision = micro_precision * 100
 micro_recall    = micro_recall * 100
 
-print("#########################################################################################################################################################################################################################################")
-print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}")
+conf_matrix = confusion_matrix(true_labels, voted_predictions)
+TN = conf_matrix[0, 0]
+FP = conf_matrix[0, 1]
+FN = conf_matrix[1, 0]
+TP = conf_matrix[1, 1]
+
+# Class-wise accuracy
+total_class_0 = TN + FN
+total_class_1 = TP + FP
+accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
+print("####################################################################################################################################################################################################")
+print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 model_name = "CNN"
 feature_name = "Positive Difference Map"
@@ -682,7 +708,7 @@ technique = "Vote Based Ensemble"
 
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-misclass_En_csv_path = '/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_POSITIVE_misclassified_patches.csv'
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_Positive_misclassified_patches.csv'
 misclassified_indexes = np.where(voted_predictions != true_labels)[0]
 
 misclassified_data = []
