@@ -112,6 +112,8 @@ def calculate_psnr_spatial_map(original_patches, denoised_patches, patch_size=(2
         psnr_spatial_map = np.full((*patch_size, 1), psnr_value)
         psnr_spatial_maps.append(psnr_spatial_map)
     return psnr_spatial_maps
+
+
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
@@ -176,7 +178,7 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
 #########################################################################################################################################################################################################################################
 
 def augmented_images(data, num_augmented_images_per_original):
-    augmented_images = []
+    augmented_images_list = []
     
     data_augmentation = ImageDataGenerator(
         rotation_range=40,
@@ -187,14 +189,16 @@ def augmented_images(data, num_augmented_images_per_original):
     )
 
     for i, patch in enumerate(data):
-        patch = np.expand_dims(patch, axis=0)
+        if patch.ndim == 2:  # If the patch is 2D, make it 3D
+            patch = np.expand_dims(patch, axis=-1)
+        patch = np.expand_dims(patch, axis=0)  # Ensure patch has the shape (1, height, width, channels)
+        
         temp_generator = data_augmentation.flow(patch, batch_size=1)
         
         for _ in range(num_augmented_images_per_original):
-            augmented_image = next(temp_generator)[0]  
-            augmented_image = np.squeeze(augmented_image)
-            augmented_images.append(augmented_image)
-    return augmented_images
+            augmented_image = next(temp_generator)[0]
+            augmented_images_list.append(augmented_image)
+    return np.array(augmented_images_list)
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -469,7 +473,7 @@ def eval (model, test_pat, test_label, model_name, feature_name, technique):
     
     print("#############################################################################################################################################################################")
     print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
-    save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+    #save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
     class_1_precision = micro_precision
     models.append(model)
@@ -539,7 +543,7 @@ model_name = "CNN"
 feature_name = "PSNR"
 technique = "Precision Ensemble"
 
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+#save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 print("####################################################################################################################################################################################################")
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
@@ -625,7 +629,7 @@ print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {
 model_name = "CNN"
 feature_name = "PSNR"
 technique = "Average Ensemble"
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+#save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 
 misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_PSNR_misclassified_patches.csv'
@@ -709,7 +713,7 @@ model_name = "CNN"
 feature_name = "PSNR"
 technique = "Vote Based Ensemble"
 
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+#save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_PSNR_misclassified_patches.csv'
 misclassified_indexes = np.where(voted_predictions != true_labels)[0]
