@@ -467,7 +467,7 @@ def eval (model, test_pat, test_label, model_name, feature_name, technique):
     micro_precision = micro_precision * 100
     micro_recall    = micro_recall * 100
     
-    print("#########################################################################################################################################################################################################################################")
+    print("#############################################################################################################################################################################")
     print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
     save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
@@ -486,10 +486,10 @@ eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Differen
 ## PRECISION ENSEMBLE 
 #########################################################################################################################################################################################################################################
 
-# test_patches = np.array(test_patches)
-# test_patches = test_patches.reshape((-1, 224, 224, 1))
+test_patches = np.array(test_patches)
+test_patches = test_patches.reshape((-1, 224, 224, 1))
 
-# test_labels = np.array(test_labels)
+test_labels = np.array(test_labels)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
 csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_Weights.csv'
