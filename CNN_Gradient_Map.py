@@ -493,7 +493,7 @@ def eval (model, test_pat, test_label, model_name, feature_name, technique):
     
     print("#############################################################################################################################################################################")
     print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
-    #save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+    save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
     class_1_precision = micro_precision
     models.append(model)
@@ -563,7 +563,7 @@ model_name = "CNN"
 feature_name = "Gradient Map"
 technique = "Precision Ensemble"
 
-#save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 print("####################################################################################################################################################################################################")
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
@@ -649,7 +649,7 @@ print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {
 model_name = "CNN"
 feature_name = "Gradient Map"
 technique = "Average Ensemble"
-#save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 
 misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_GRADIENT_misclassified_patches.csv'
@@ -733,7 +733,7 @@ model_name = "CNN"
 feature_name = "Gradient Map"
 technique = "Vote Based Ensemble"
 
-#save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_GRADIENT_misclassified_patches.csv'
 misclassified_indexes = np.where(voted_predictions != true_labels)[0]
