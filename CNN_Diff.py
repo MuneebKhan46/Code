@@ -7,7 +7,7 @@ import textwrap
 import pandas as pd
 import resource
 from tensorflow.keras.regularizers import l1
-
+from statistics import mode
 from tensorflow import keras
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import plot_model
@@ -583,6 +583,8 @@ true_labels = test_labels.ravel()
 
 test_acc = accuracy_score(true_labels, predicted_classes) * 100
 test_loss = log_loss(true_labels, weighted_predictions)
+print(test_acc)
+
 
 weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
 
