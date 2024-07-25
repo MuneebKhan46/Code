@@ -105,9 +105,13 @@ def load_data_from_csv(csv_path, original_dir, denoised_dir):
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-def calculate_psnr(original, denoised):
-  return [peak_signal_noise_ratio(orig_patch, denoised_patch, data_range=255) for orig_patch, denoised_patch in zip(original, denoised)]
-
+def calculate_psnr_spatial_map(original_patches, denoised_patches, patch_size=(224, 224)):
+    psnr_spatial_maps = []
+    for orig_patch, denoised_patch in zip(original_patches, denoised_patches):
+        psnr_value = peak_signal_noise_ratio(orig_patch, denoised_patch, data_range=255)
+        psnr_spatial_map = np.full((*patch_size, 1), psnr_value)
+        psnr_spatial_maps.append(psnr_spatial_map)
+    return psnr_spatial_maps
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
@@ -219,7 +223,7 @@ def create_cnn_model(input_shape=(224,224, 1)):
 
 original_patches, denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, original_dir, denoised_dir)
 
-diff_patches = calculate_psnr(original_patches, denoised_patches)
+diff_patches = calculate_psnr_spatial_map(original_patches, denoised_patches)
 diff_patches_np, labels_np = prepare_data(diff_patches, labels)
 
 combined = list(zip(diff_patches_np, labels_np, denoised_image_names, all_patch_numbers))
