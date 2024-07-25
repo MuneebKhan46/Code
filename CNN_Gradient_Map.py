@@ -122,7 +122,8 @@ def calculate_gradient_map(patches):
 def calculate_gradient_difference_map(original_gradient_maps, denoised_gradient_maps):
     difference_maps = []
     for orig_grad, denoised_grad in zip(original_gradient_maps, denoised_gradient_maps):
-        difference = np.abs(orig_grad - denoised_grad)
+        # difference = np.abs(orig_grad - denoised_grad)
+        difference = (orig_grad - denoised_grad)        
         difference_maps.append(difference)
     return difference_maps
     
