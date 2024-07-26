@@ -6,6 +6,8 @@ import csv
 import textwrap
 import pandas as pd
 import resource
+from skimage.filters import sobel_h, sobel_v
+
 from tensorflow.keras.regularizers import l1
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from scipy.stats import mode
@@ -105,9 +107,25 @@ def load_data_from_csv(csv_path, original_dir, denoised_dir):
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-def calculate_ssim(original, denoised):
-    return [structural_similarity(orig_patch, denoised_patch, data_range=255) for orig_patch, denoised_patch in zip(original, denoised)]
+def calculate_gradient_map(patches):
+    gradient_maps = []
+    for patch in patches:
+        sobel_x = sobel_h(patch.astype(np.float32))
+        sobel_y = sobel_v(patch.astype(np.float32))
+        gradient_magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
+        gradient_maps.append(gradient_magnitude)
+    return gradient_maps
 
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
+
+def calculate_gradient_difference_map(original_gradient_maps, denoised_gradient_maps):
+    difference_maps = []
+    for orig_grad, denoised_grad in zip(original_gradient_maps, denoised_gradient_maps):
+        difference = np.abs(orig_grad - denoised_grad)
+        difference_maps.append(difference)
+    return difference_maps
+    
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
@@ -172,7 +190,7 @@ def save_metric_details(model_name, technique, feature_name, test_acc, weighted_
 #########################################################################################################################################################################################################################################
 
 def augmented_images(data, num_augmented_images_per_original):
-    augmented_images = []
+    augmented_images_list = []
     
     data_augmentation = ImageDataGenerator(
         rotation_range=40,
@@ -183,14 +201,16 @@ def augmented_images(data, num_augmented_images_per_original):
     )
 
     for i, patch in enumerate(data):
-        patch = np.expand_dims(patch, axis=0)
+        if patch.ndim == 2:  # If the patch is 2D, make it 3D
+            patch = np.expand_dims(patch, axis=-1)
+        patch = np.expand_dims(patch, axis=0)  # Ensure patch has the shape (1, height, width, channels)
+        
         temp_generator = data_augmentation.flow(patch, batch_size=1)
         
         for _ in range(num_augmented_images_per_original):
-            augmented_image = next(temp_generator)[0]  
-            augmented_image = np.squeeze(augmented_image)
-            augmented_images.append(augmented_image)
-    return augmented_images
+            augmented_image = next(temp_generator)[0]
+            augmented_images_list.append(augmented_image)
+    return np.array(augmented_images_list)
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -219,7 +239,11 @@ def create_cnn_model(input_shape=(224,224, 1)):
 
 original_patches, denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, original_dir, denoised_dir)
 
-diff_patches = calculate_ssim(original_patches, denoised_patches)
+original_gradient_maps = calculate_gradient_map(original_patches)
+denoised_gradient_maps = calculate_gradient_map(denoised_patches)
+
+diff_patches = calculate_gradient_difference_map(original_gradient_maps, denoised_gradient_maps)
+
 diff_patches_np, labels_np = prepare_data(diff_patches, labels)
 
 combined = list(zip(diff_patches_np, labels_np, denoised_image_names, all_patch_numbers))
@@ -280,9 +304,12 @@ augmented_images_np = np.stack(augmented_images)
 augmented_labels = np.ones(len(augmented_images_np))
 
 train_patches_expanded = np.expand_dims(train_patches, axis=-1)
-augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
+# augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
 
-train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np_expanded), axis=0)
+print(f"Train Shape: {train_patches_expanded.shape}")
+print(f"AUG_Train Shape: {augmented_images_np.shape}")
+
+train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np), axis=0)
 train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
 
 print(f" Total Augmented Patches: {len(train_patches_combined)}")
@@ -314,7 +341,7 @@ opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = create_cnn_model()
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
-wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_SSIM_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_ABSOLUTE_GRADIENT_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
@@ -338,7 +365,7 @@ opt = Adam(learning_rate=2e-05)
 cnn_cw_model = create_cnn_model()
 cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_SSIM_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_ABSOLUTE_GRADIENT_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
 cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
@@ -375,7 +402,7 @@ cnn_cb_model = create_cnn_model()
 cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 
-cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_SSIM_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_ABSOLUTE_GRADIENT_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
 cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
@@ -473,9 +500,9 @@ def eval (model, test_pat, test_label, model_name, feature_name, technique):
 
 
 
-eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "SSIM", technique = "Baseline")
-eval (cnn_cw_model, X_test, y_test, model_name = "CNN", feature_name = "SSIM", technique = "Class Weight")
-eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "SSIM", technique = "Class Balance")
+eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "Absolute Gradient Map", technique = "Baseline")
+eval (cnn_cw_model, X_test, y_test, model_name = "CNN", feature_name = "Absolute Gradient Map", technique = "Class Weight")
+eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Absolute Gradient Map", technique = "Class Balance")
 
 
 #########################################################################################################################################################################################################################################
@@ -488,7 +515,7 @@ test_patches = test_patches.reshape((-1, 224, 224, 1))
 test_labels = np.array(test_labels)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
-csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_SSIM_Weights.csv'
+csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_ABSOLUTE_GRADIENT_Weights.csv'
 np.savetxt(csv_file_path, weights, delimiter=',')
 
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
@@ -532,7 +559,7 @@ accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
 
 model_name = "CNN"
-feature_name = "SSIM"
+feature_name = "Absolute Gradient Map"
 technique = "Precision Ensemble"
 
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
@@ -541,7 +568,7 @@ print("#########################################################################
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 
-misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_SSIM_misclassified_patches.csv'
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_ABSOLUTE_GRADIENT_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
@@ -619,12 +646,12 @@ print("#########################################################################
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 model_name = "CNN"
-feature_name = "SSIM"
+feature_name = "Absolute Gradient Map"
 technique = "Average Ensemble"
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
 
-misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_SSIM_misclassified_patches.csv'
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_ABSOLUTE_GRADIENT_misclassified_patches.csv'
 misclassified_indexes = np.where(predicted_classes != true_labels)[0]
 
 misclassified_data = []
@@ -702,12 +729,12 @@ print("#########################################################################
 print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
 model_name = "CNN"
-feature_name = "SSIM"
+feature_name = "Absolute Gradient Map"
 technique = "Vote Based Ensemble"
 
 save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_SSIM_misclassified_patches.csv'
+misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_ABSOLUTE_GRADIENT_misclassified_patches.csv'
 misclassified_indexes = np.where(voted_predictions != true_labels)[0]
 
 misclassified_data = []
