@@ -243,6 +243,7 @@ original_patches, denoised_patches, labels, denoised_image_names, all_patch_numb
 original_lbp_features = calculate_lbp(original_patches)
 denoised_lbp_features = calculate_lbp(denoised_patches)
 
+print(denoised_lbp_features[0].shape)
 diff_patches = prepare_texture_data(original_lbp_features, denoised_lbp_features)
 print(diff_patches[0].shape)
 diff_patches_np, labels_np = prepare_data(diff_patches, labels)
