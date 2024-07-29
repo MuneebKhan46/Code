@@ -239,7 +239,6 @@ def create_cnn_model(input_shape=(224,224, 1)):
     
 
 
-print("Start")
 original_patches, denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, original_dir, denoised_dir)
 
 original_lbp_features = calculate_lbp(original_patches)
