@@ -121,7 +121,7 @@ def calculate_lbp(patches, P=8, R=1):
 def prepare_texture_data(original_lbp, denoised_lbp):
   lbp_diff_map = []
   for orig_lbp, denoised_lbp in zip(original_lbp, denoised_lbp):
-    lbp_diff = np.abs(orig_lbp - denoised_lbp).flatten()
+    lbp_diff = np.abs(orig_lbp - denoised_lbp)
     # lbp_diff = (orig_lbp - denoised_lbp).flatten()
     lbp_diff_map.append(lbp_diff)
   
