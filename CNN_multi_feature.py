@@ -251,7 +251,7 @@ combined_feature = combine_features(denoised_patches, diff_patches, denoised_gra
 
 combined_feature_np, labels_np = prepare_data(combined_feature, labels)
 
-print(f" Combine Feature Shape: {combined_features_np.shape}")
+print(f" Combine Feature Shape: {combined_feature_np.shape}")
 
 
 #########################################################################################################################################################################################################################################
