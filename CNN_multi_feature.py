@@ -20,7 +20,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, array_to_img
 from keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization, concatenate
 
-from keras.callbacks import ModelCheckpoint,EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 
 from sklearn.utils import shuffle as sklearn_shuffle
 from sklearn.model_selection import train_test_split
@@ -313,13 +313,6 @@ ghosting_patches = train_patches[train_labels == 1]
 augmented_images_list = augmented_images(ghosting_patches, num_augmented_images_per_original=8)
 augmented_images_np = np.stack(augmented_images_list)
 
-
-# augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
-# train_patches_expanded = np.expand_dims(train_patches, axis=-1)
-# print(f"Train Shape: {train_patches_expanded.shape}")
-# print(f"AUG_Train Shape: {augmented_images_np_expanded.shape}")
-# train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np_expanded), axis=0)
-
 train_patches_combined = np.concatenate((train_patches, augmented_images_np), axis=0)
 augmented_labels = np.ones(len(augmented_images_np))
 train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
@@ -348,423 +341,436 @@ print(f"y_Test Shape: {y_test.shape}")
 # Without Class Weight
 #########################################################################################################################################################################################################################################
 
-opt = Adam(learning_rate=2e-05)
-cnn_wcw_model = create_cnn_model()
-cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+# opt = Adam(learning_rate=2e-05)
+# cnn_wcw_model = create_cnn_model()
+# cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
     
-wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+# wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+# wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+# wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+
+
+strategy = tf.distribute.MirroredStrategy()
+
+with strategy.scope():
+    cnn_wcw_model = create_cnn_model()
+    opt = Adam(learning_rate=2e-05)
+    cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+  
+    wcw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1)
+    wcw_model_early_stopping = EarlyStopping( monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+    
+    wcw_history = cnn_wcw_model.fit( X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Weight
 #########################################################################################################################################################################################################################################
 
-ng = len(train_patches[train_labels == 0])
-ga =  len(train_patches[train_labels == 1])
-total = ng + ga
+# ng = len(train_patches[train_labels == 0])
+# ga =  len(train_patches[train_labels == 1])
+# total = ng + ga
 
-imbalance_ratio = ng / ga  
-weight_for_0 = (1 / ng) * (total / 2.0)
-weight_for_1 = (1 / ga) * (total / 2.0)
-class_weight = {0: weight_for_0, 1: weight_for_1}
+# imbalance_ratio = ng / ga  
+# weight_for_0 = (1 / ng) * (total / 2.0)
+# weight_for_1 = (1 / ga) * (total / 2.0)
+# class_weight = {0: weight_for_0, 1: weight_for_1}
 
-print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
-print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
+# print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
+# print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
 
-opt = Adam(learning_rate=2e-05)
-cnn_cw_model = create_cnn_model()
-cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+# opt = Adam(learning_rate=2e-05)
+# cnn_cw_model = create_cnn_model()
+# cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+# cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+# cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
-cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
+# cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
 
-#########################################################################################################################################################################################################################################
-# With Class Balance
-#########################################################################################################################################################################################################################################
+# #########################################################################################################################################################################################################################################
+# # With Class Balance
+# #########################################################################################################################################################################################################################################
  
-combined = list(zip(CX_train, Cy_train))
-combined = sklearn_shuffle(combined)
+# combined = list(zip(CX_train, Cy_train))
+# combined = sklearn_shuffle(combined)
 
-ghosting_artifacts = [item for item in combined if item[1] == 1]
-non_ghosting_artifacts = [item for item in combined if item[1] == 0]
+# ghosting_artifacts = [item for item in combined if item[1] == 1]
+# non_ghosting_artifacts = [item for item in combined if item[1] == 0]
 
-print(f"Ghosting Artifacts: {len(ghosting_artifacts)}")
-print(f"Non Ghosting Artifacts: {len(non_ghosting_artifacts)}")
+# print(f"Ghosting Artifacts: {len(ghosting_artifacts)}")
+# print(f"Non Ghosting Artifacts: {len(non_ghosting_artifacts)}")
 
-num_ghosting_artifacts = len(ghosting_artifacts)
-
-
-train_val_ghosting = ghosting_artifacts[:num_ghosting_artifacts]
-train_val_non_ghosting = non_ghosting_artifacts[:num_ghosting_artifacts]
-
-cb_train_dataset = train_val_ghosting + train_val_non_ghosting
-print(f"Class balance train size {len(cb_train_dataset)}")
-
-cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
-
-cb_train_patches = np.array(cb_train_patches)
-cb_train_labels = np.array(cb_train_labels)
-
-opt = Adam(learning_rate=2e-05)
-cnn_cb_model = create_cnn_model()
-cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+# num_ghosting_artifacts = len(ghosting_artifacts)
 
 
-cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+# train_val_ghosting = ghosting_artifacts[:num_ghosting_artifacts]
+# train_val_non_ghosting = non_ghosting_artifacts[:num_ghosting_artifacts]
 
-cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+# cb_train_dataset = train_val_ghosting + train_val_non_ghosting
+# print(f"Class balance train size {len(cb_train_dataset)}")
 
-#########################################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################################
-# Testing
-#########################################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################################
+# cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
+
+# cb_train_patches = np.array(cb_train_patches)
+# cb_train_labels = np.array(cb_train_labels)
+
+# opt = Adam(learning_rate=2e-05)
+# cnn_cb_model = create_cnn_model()
+# cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
 
-def eval (model, test_pat, test_label, model_name, feature_name, technique):
+# cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+# cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+
+# cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+
+# #########################################################################################################################################################################################################################################
+# #########################################################################################################################################################################################################################################
+# # Testing
+# #########################################################################################################################################################################################################################################
+# #########################################################################################################################################################################################################################################
+
+
+# def eval (model, test_pat, test_label, model_name, feature_name, technique):
     
-    test_loss, test_acc = model.evaluate(test_pat, test_label)
-    test_acc  = test_acc * 100
+#     test_loss, test_acc = model.evaluate(test_pat, test_label)
+#     test_acc  = test_acc * 100
     
-    predictions = model.predict(test_pat)
-    predicted_labels = np.argmax(predictions, axis=1)
+#     predictions = model.predict(test_pat)
+#     predicted_labels = np.argmax(predictions, axis=1)
     
-    report = classification_report(test_label, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+#     report = classification_report(test_label, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
     
-    conf_matrix = confusion_matrix(test_label, predicted_labels)
-    TN = conf_matrix[0, 0]
-    FP = conf_matrix[0, 1]
-    FN = conf_matrix[1, 0]
-    TP = conf_matrix[1, 1]
+#     conf_matrix = confusion_matrix(test_label, predicted_labels)
+#     TN = conf_matrix[0, 0]
+#     FP = conf_matrix[0, 1]
+#     FN = conf_matrix[1, 0]
+#     TP = conf_matrix[1, 1]
     
-    total_class_0 = TN + FP
-    total_class_1 = TP + FN
-    correctly_predicted_0 = TN
-    correctly_predicted_1 = TP
-    
-    
-    accuracy_0 = (TN / total_class_0) * 100
-    accuracy_1 = (TP / total_class_1) * 100
-    
-    precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-    recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-    precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-    recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+#     total_class_0 = TN + FP
+#     total_class_1 = TP + FN
+#     correctly_predicted_0 = TN
+#     correctly_predicted_1 = TP
     
     
-    weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
-    weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
+#     accuracy_0 = (TN / total_class_0) * 100
+#     accuracy_1 = (TP / total_class_1) * 100
     
-    if weighted_precision + weighted_recall > 0:
-        weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-    else:
-        weighted_f1_score = 0
+#     precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+#     recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+#     precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+#     recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
     
-    weighted_f1_score  = weighted_f1_score*100
-    weighted_precision = weighted_precision*100
-    weighted_recall    = weighted_recall*100
     
-    macro_precision = (precision_0 + precision_1) / 2
-    macro_recall = (recall_0 + recall_1) / 2
+#     weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
+#     weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
     
-    if macro_precision + macro_recall > 0:
-        macro_f1_score = 2 * (macro_precision * macro_recall) / (macro_precision + macro_recall)
-    else:
-        macro_f1_score = 0
+#     if weighted_precision + weighted_recall > 0:
+#         weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+#     else:
+#         weighted_f1_score = 0
+    
+#     weighted_f1_score  = weighted_f1_score*100
+#     weighted_precision = weighted_precision*100
+#     weighted_recall    = weighted_recall*100
+    
+#     macro_precision = (precision_0 + precision_1) / 2
+#     macro_recall = (recall_0 + recall_1) / 2
+    
+#     if macro_precision + macro_recall > 0:
+#         macro_f1_score = 2 * (macro_precision * macro_recall) / (macro_precision + macro_recall)
+#     else:
+#         macro_f1_score = 0
       
-    macro_f1_score  = macro_f1_score * 100
-    macro_precision = macro_precision * 100
-    macro_recall    = macro_recall * 100
+#     macro_f1_score  = macro_f1_score * 100
+#     macro_precision = macro_precision * 100
+#     macro_recall    = macro_recall * 100
     
     
-    TP_0 = total_class_0 * recall_0
-    TP_1 = total_class_1 * recall_1
-    FP_0 = total_class_0 * (1 - precision_0)
-    FP_1 = total_class_1 * (1 - precision_1)
-    FN_0 = total_class_0 * (1 - recall_0)
-    FN_1 = total_class_1 * (1 - recall_1)
+#     TP_0 = total_class_0 * recall_0
+#     TP_1 = total_class_1 * recall_1
+#     FP_0 = total_class_0 * (1 - precision_0)
+#     FP_1 = total_class_1 * (1 - precision_1)
+#     FN_0 = total_class_0 * (1 - recall_0)
+#     FN_1 = total_class_1 * (1 - recall_1)
     
-    micro_precision = (TP_0 + TP_1) / (TP_0 + TP_1 + FP_0 + FP_1)
-    micro_recall = (TP_0 + TP_1) / (TP_0 + TP_1 + FN_0 + FN_1)
+#     micro_precision = (TP_0 + TP_1) / (TP_0 + TP_1 + FP_0 + FP_1)
+#     micro_recall = (TP_0 + TP_1) / (TP_0 + TP_1 + FN_0 + FN_1)
     
-    if micro_precision + micro_recall > 0:
-        micro_f1_score = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall)
-    else:
-        micro_f1_score = 0
+#     if micro_precision + micro_recall > 0:
+#         micro_f1_score = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall)
+#     else:
+#         micro_f1_score = 0
     
     
-    micro_f1_score  = micro_f1_score * 100
-    micro_precision = micro_precision * 100
-    micro_recall    = micro_recall * 100
+#     micro_f1_score  = micro_f1_score * 100
+#     micro_precision = micro_precision * 100
+#     micro_recall    = micro_recall * 100
     
-    print("#############################################################################################################################################################################")
-    print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
-    save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+#     print("#############################################################################################################################################################################")
+#     print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+#     save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-    class_1_precision = micro_precision
-    models.append(model)
-    class_1_accuracies.append(class_1_precision)
-
-
-
-eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "Multi Feature Map", technique = "Baseline")
-eval (cnn_cw_model, X_test, y_test, model_name = "CNN", feature_name = "Multi Feature Map", technique = "Class Weight")
-eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Multi Feature Map", technique = "Class Balance")
+#     class_1_precision = micro_precision
+#     models.append(model)
+#     class_1_accuracies.append(class_1_precision)
 
 
-#########################################################################################################################################################################################################################################
-## PRECISION ENSEMBLE 
-#########################################################################################################################################################################################################################################
 
-test_patches = np.array(test_patches)
-test_patches = test_patches.reshape((-1, 224, 224, 1))
-
-test_labels = np.array(test_labels)
-
-weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
-csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_Weights.csv'
-np.savetxt(csv_file_path, weights, delimiter=',')
-
-predictions = np.array([model.predict(test_patches).ravel() for model in models])
-weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
-predicted_classes = (weighted_predictions > 0.5).astype(int)
-true_labels = test_labels.ravel()
-
-test_acc = accuracy_score(true_labels, predicted_classes) * 100
-test_loss = log_loss(true_labels, weighted_predictions)
-
-weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
-
-weighted_precision *= 100
-weighted_recall *= 100
-weighted_f1_score *= 100
+# eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "Multi Feature Map", technique = "Baseline")
+# eval (cnn_cw_model, X_test, y_test, model_name = "CNN", feature_name = "Multi Feature Map", technique = "Class Weight")
+# eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Multi Feature Map", technique = "Class Balance")
 
 
-macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='macro')
+# #########################################################################################################################################################################################################################################
+# ## PRECISION ENSEMBLE 
+# #########################################################################################################################################################################################################################################
 
-macro_f1_score  = macro_f1_score * 100
-macro_precision = macro_precision * 100
-macro_recall    = macro_recall * 100
+# test_patches = np.array(test_patches)
+# test_patches = test_patches.reshape((-1, 224, 224, 1))
 
+# test_labels = np.array(test_labels)
 
-micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
+# weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
+# csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_Weights.csv'
+# np.savetxt(csv_file_path, weights, delimiter=',')
 
-micro_f1_score  = micro_f1_score * 100
-micro_precision = micro_precision * 100
-micro_recall    = micro_recall * 100
+# predictions = np.array([model.predict(test_patches).ravel() for model in models])
+# weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
+# predicted_classes = (weighted_predictions > 0.5).astype(int)
+# true_labels = test_labels.ravel()
 
-conf_matrix = confusion_matrix(true_labels, predicted_classes)
-TN = conf_matrix[0, 0]
-FP = conf_matrix[0, 1]
-FN = conf_matrix[1, 0]
-TP = conf_matrix[1, 1]
+# test_acc = accuracy_score(true_labels, predicted_classes) * 100
+# test_loss = log_loss(true_labels, weighted_predictions)
 
-total_class_0 = TN + FN
-total_class_1 = TP + FP
-accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+# weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
 
-
-model_name = "CNN"
-feature_name = "Multi Feature Map"
-technique = "Precision Ensemble"
-
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
-
-print("####################################################################################################################################################################################################")
-print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+# weighted_precision *= 100
+# weighted_recall *= 100
+# weighted_f1_score *= 100
 
 
-misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_MULTI_FEATURE_misclassified_patches.csv'
-misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+# macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='macro')
 
-misclassified_data = []
-for index in misclassified_indexes:
-    denoised_image_name = test_image_names[index]
-    patch_number = test_patch_numbers[index]
-    true_label = true_labels[index]
-    predicted_label = predicted_classes[index]
+# macro_f1_score  = macro_f1_score * 100
+# macro_precision = macro_precision * 100
+# macro_recall    = macro_recall * 100
 
-    probability_non_ghosting = 1 - weighted_predictions[index]
-    probability_ghosting = weighted_predictions[index]
+
+# micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
+
+# micro_f1_score  = micro_f1_score * 100
+# micro_precision = micro_precision * 100
+# micro_recall    = micro_recall * 100
+
+# conf_matrix = confusion_matrix(true_labels, predicted_classes)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
+
+# total_class_0 = TN + FN
+# total_class_1 = TP + FP
+# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
+
+# model_name = "CNN"
+# feature_name = "Multi Feature Map"
+# technique = "Precision Ensemble"
+
+# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+# print("####################################################################################################################################################################################################")
+# print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+
+
+# misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Precision_Ensemble_CNN_MULTI_FEATURE_misclassified_patches.csv'
+# misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+
+# misclassified_data = []
+# for index in misclassified_indexes:
+#     denoised_image_name = test_image_names[index]
+#     patch_number = test_patch_numbers[index]
+#     true_label = true_labels[index]
+#     predicted_label = predicted_classes[index]
+
+#     probability_non_ghosting = 1 - weighted_predictions[index]
+#     probability_ghosting = weighted_predictions[index]
     
-    misclassified_data.append([
-        denoised_image_name, patch_number, true_label, predicted_label,
-        probability_non_ghosting, probability_ghosting
-    ])
+#     misclassified_data.append([
+#         denoised_image_name, patch_number, true_label, predicted_label,
+#         probability_non_ghosting, probability_ghosting
+#     ])
 
-misclassified_df = pd.DataFrame(misclassified_data, columns=[
-    'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
-    'Probability Non-Ghosting', 'Probability Ghosting'
-])
-misclassified_df.to_csv(misclass_En_csv_path, index=False)
-
-
-#########################################################################################################################################################################################################################################
-## AVERAGE ENSEMBLE 
-#########################################################################################################################################################################################################################################
-
-predictions = np.array([model.predict(test_patches).ravel() for model in models])
-average_predictions = np.mean(predictions, axis=0)
-
-predicted_classes = (average_predictions > 0.5).astype(int)
-true_labels = test_labels.ravel()
+# misclassified_df = pd.DataFrame(misclassified_data, columns=[
+#     'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
+#     'Probability Non-Ghosting', 'Probability Ghosting'
+# ])
+# misclassified_df.to_csv(misclass_En_csv_path, index=False)
 
 
-test_acc = accuracy_score(true_labels, predicted_classes) * 100
-test_loss = log_loss(true_labels, weighted_predictions)
-print(test_acc)
+# #########################################################################################################################################################################################################################################
+# ## AVERAGE ENSEMBLE 
+# #########################################################################################################################################################################################################################################
+
+# predictions = np.array([model.predict(test_patches).ravel() for model in models])
+# average_predictions = np.mean(predictions, axis=0)
+
+# predicted_classes = (average_predictions > 0.5).astype(int)
+# true_labels = test_labels.ravel()
 
 
-weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
-
-weighted_precision *= 100
-weighted_recall *= 100
-weighted_f1_score *= 100
+# test_acc = accuracy_score(true_labels, predicted_classes) * 100
+# test_loss = log_loss(true_labels, weighted_predictions)
+# print(test_acc)
 
 
-macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='macro')
+# weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
 
-macro_f1_score  = macro_f1_score * 100
-macro_precision = macro_precision * 100
-macro_recall    = macro_recall * 100
-
-
-micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
-
-micro_f1_score  = micro_f1_score * 100
-micro_precision = micro_precision * 100
-micro_recall    = micro_recall * 100
-
-conf_matrix = confusion_matrix(true_labels, predicted_classes)
-TN = conf_matrix[0, 0]
-FP = conf_matrix[0, 1]
-FN = conf_matrix[1, 0]
-TP = conf_matrix[1, 1]
+# weighted_precision *= 100
+# weighted_recall *= 100
+# weighted_f1_score *= 100
 
 
-total_class_0 = TN + FN
-total_class_1 = TP + FP
-accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+# macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='macro')
+
+# macro_f1_score  = macro_f1_score * 100
+# macro_precision = macro_precision * 100
+# macro_recall    = macro_recall * 100
 
 
-print("####################################################################################################################################################################################################")
-print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+# micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
 
-model_name = "CNN"
-feature_name = "Multi Feature Map"
-technique = "Average Ensemble"
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+# micro_f1_score  = micro_f1_score * 100
+# micro_precision = micro_precision * 100
+# micro_recall    = micro_recall * 100
+
+# conf_matrix = confusion_matrix(true_labels, predicted_classes)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
 
 
-misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_MULTI_FEATURE_misclassified_patches.csv'
-misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+# total_class_0 = TN + FN
+# total_class_1 = TP + FP
+# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-misclassified_data = []
-for index in misclassified_indexes:
-    denoised_image_name = test_image_names[index]
-    patch_number = test_patch_numbers[index]
-    true_label = true_labels[index]
-    predicted_label = predicted_classes[index]
 
-    probability_non_ghosting = 1 - average_predictions[index]
-    probability_ghosting = average_predictions[index]
+# print("####################################################################################################################################################################################################")
+# print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+
+# model_name = "CNN"
+# feature_name = "Multi Feature Map"
+# technique = "Average Ensemble"
+# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+
+# misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Average_Ensemble_CNN_MULTI_FEATURE_misclassified_patches.csv'
+# misclassified_indexes = np.where(predicted_classes != true_labels)[0]
+
+# misclassified_data = []
+# for index in misclassified_indexes:
+#     denoised_image_name = test_image_names[index]
+#     patch_number = test_patch_numbers[index]
+#     true_label = true_labels[index]
+#     predicted_label = predicted_classes[index]
+
+#     probability_non_ghosting = 1 - average_predictions[index]
+#     probability_ghosting = average_predictions[index]
     
-    misclassified_data.append([
-        denoised_image_name, patch_number, true_label, predicted_label,
-        probability_non_ghosting, probability_ghosting
-    ])
+#     misclassified_data.append([
+#         denoised_image_name, patch_number, true_label, predicted_label,
+#         probability_non_ghosting, probability_ghosting
+#     ])
 
-misclassified_df = pd.DataFrame(misclassified_data, columns=[
-    'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
-    'Probability Non-Ghosting', 'Probability Ghosting'
-])
-misclassified_df.to_csv(misclass_En_csv_path, index=False)
+# misclassified_df = pd.DataFrame(misclassified_data, columns=[
+#     'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
+#     'Probability Non-Ghosting', 'Probability Ghosting'
+# ])
+# misclassified_df.to_csv(misclass_En_csv_path, index=False)
 
 
 
-#########################################################################################################################################################################################################################################
-## VOTE ENSEMBLE 
-#########################################################################################################################################################################################################################################
+# #########################################################################################################################################################################################################################################
+# ## VOTE ENSEMBLE 
+# #########################################################################################################################################################################################################################################
 
-predictions = []
-for model in models:
-    pred = model.predict(test_patches)
-    pred_class = (pred[:, 0] > 0.5).astype(int)
-    predictions.append(pred_class)
-predictions = np.array(predictions)
+# predictions = []
+# for model in models:
+#     pred = model.predict(test_patches)
+#     pred_class = (pred[:, 0] > 0.5).astype(int)
+#     predictions.append(pred_class)
+# predictions = np.array(predictions)
 
-voted_predictions = mode(predictions, axis=0)[0].flatten()
+# voted_predictions = mode(predictions, axis=0)[0].flatten()
 
-true_labels = test_labels.ravel()
+# true_labels = test_labels.ravel()
 
-test_acc = accuracy_score(true_labels, voted_predictions) * 100
-test_loss = log_loss(true_labels, voted_predictions)
+# test_acc = accuracy_score(true_labels, voted_predictions) * 100
+# test_loss = log_loss(true_labels, voted_predictions)
 
-weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='weighted')
+# weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='weighted')
 
-weighted_precision *= 100
-weighted_recall *= 100
-weighted_f1_score *= 100
+# weighted_precision *= 100
+# weighted_recall *= 100
+# weighted_f1_score *= 100
 
-macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='macro')
+# macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='macro')
 
-macro_f1_score  = macro_f1_score * 100
-macro_precision = macro_precision * 100
-macro_recall    = macro_recall * 100
+# macro_f1_score  = macro_f1_score * 100
+# macro_precision = macro_precision * 100
+# macro_recall    = macro_recall * 100
 
-micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='micro')
+# micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='micro')
 
-micro_f1_score  = micro_f1_score * 100
-micro_precision = micro_precision * 100
-micro_recall    = micro_recall * 100
+# micro_f1_score  = micro_f1_score * 100
+# micro_precision = micro_precision * 100
+# micro_recall    = micro_recall * 100
 
-conf_matrix = confusion_matrix(true_labels, voted_predictions)
-TN = conf_matrix[0, 0]
-FP = conf_matrix[0, 1]
-FN = conf_matrix[1, 0]
-TP = conf_matrix[1, 1]
+# conf_matrix = confusion_matrix(true_labels, voted_predictions)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
 
-# Class-wise accuracy
-total_class_0 = TN + FN
-total_class_1 = TP + FP
-accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
-accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+# # Class-wise accuracy
+# total_class_0 = TN + FN
+# total_class_1 = TP + FP
+# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
 
-print("####################################################################################################################################################################################################")
-print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+# print("####################################################################################################################################################################################################")
+# print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
 
-model_name = "CNN"
-feature_name = "Multi Feature Map"
-technique = "Vote Based Ensemble"
+# model_name = "CNN"
+# feature_name = "Multi Feature Map"
+# technique = "Vote Based Ensemble"
 
-save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+# save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_MULTI_FEATURE_misclassified_patches.csv'
-misclassified_indexes = np.where(voted_predictions != true_labels)[0]
+# misclass_En_csv_path = '/ghosting-artifact-metric/Project/Results/Misclassified_Patches/Vote_Ensemble_CNN_MULTI_FEATURE_misclassified_patches.csv'
+# misclassified_indexes = np.where(voted_predictions != true_labels)[0]
 
-misclassified_data = []
-for index in misclassified_indexes:
-    denoised_image_name = test_image_names[index]
-    patch_number = test_patch_numbers[index]
-    true_label = true_labels[index]
-    predicted_label = voted_predictions[index]
+# misclassified_data = []
+# for index in misclassified_indexes:
+#     denoised_image_name = test_image_names[index]
+#     patch_number = test_patch_numbers[index]
+#     true_label = true_labels[index]
+#     predicted_label = voted_predictions[index]
 
-    probability_non_ghosting = 1 - (np.sum(predictions[:, index]) / len(models))
-    probability_ghosting = np.sum(predictions[:, index]) / len(models)
+#     probability_non_ghosting = 1 - (np.sum(predictions[:, index]) / len(models))
+#     probability_ghosting = np.sum(predictions[:, index]) / len(models)
     
-    misclassified_data.append([
-        denoised_image_name, patch_number, true_label, predicted_label,
-        probability_non_ghosting, probability_ghosting
-    ])
+#     misclassified_data.append([
+#         denoised_image_name, patch_number, true_label, predicted_label,
+#         probability_non_ghosting, probability_ghosting
+#     ])
 
-misclassified_df = pd.DataFrame(misclassified_data, columns=[
-    'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
-    'Probability Non-Ghosting', 'Probability Ghosting'
-])
-misclassified_df.to_csv(misclass_En_csv_path, index=False)
+# misclassified_df = pd.DataFrame(misclassified_data, columns=[
+#     'Denoised Image Name', 'Patch Number', 'True Label', 'Predicted Label', 
+#     'Probability Non-Ghosting', 'Probability Ghosting'
+# ])
+# misclassified_df.to_csv(misclass_En_csv_path, index=False)
