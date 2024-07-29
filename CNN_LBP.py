@@ -193,9 +193,9 @@ def augmented_images(data, num_augmented_images_per_original):
     )
 
     for i, patch in enumerate(data):
-        if patch.ndim == 2:  # If the patch is 2D, make it 3D
+        if patch.ndim == 2: 
             patch = np.expand_dims(patch, axis=-1)
-        patch = np.expand_dims(patch, axis=0)  # Ensure patch has the shape (1, height, width, channels)
+        patch = np.expand_dims(patch, axis=0)
         
         temp_generator = data_augmentation.flow(patch, batch_size=1)
         
@@ -300,7 +300,6 @@ augmented_images_np = np.stack(augmented_images)
 augmented_labels = np.ones(len(augmented_images_np))
 
 train_patches_expanded = np.expand_dims(train_patches, axis=-1)
-# augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
 
 print(f"Train Shape: {train_patches_expanded.shape}")
 print(f"AUG_Train Shape: {augmented_images_np.shape}")
@@ -715,7 +714,6 @@ FP = conf_matrix[0, 1]
 FN = conf_matrix[1, 0]
 TP = conf_matrix[1, 1]
 
-# Class-wise accuracy
 total_class_0 = TN + FN
 total_class_1 = TP + FP
 accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
