@@ -11,6 +11,7 @@ from tensorflow import keras
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from tensorflow.keras.models import Model
 import matplotlib.pyplot as plt
+from skimage.filters import sobel_h, sobel_v
 
 from keras.models import Sequential
 
