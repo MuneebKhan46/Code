@@ -307,9 +307,10 @@ print(f" Total Test Labels: {len(test_labels)}")
 #########################################################################################################################################################################################################################################
 
 ghosting_patches = train_patches[train_labels == 1]
+augmented_images = augmented_images(ghosting_patches, num_augmented_images_per_original=12)
 
 # ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
-augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=12)
+# augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=12)
 
 augmented_images_np = np.stack(augmented_images)
 augmented_labels = np.ones(len(augmented_images_np))
