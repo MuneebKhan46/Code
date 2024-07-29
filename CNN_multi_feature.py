@@ -341,26 +341,13 @@ print(f"y_Test Shape: {y_test.shape}")
 # Without Class Weight
 #########################################################################################################################################################################################################################################
 
-# opt = Adam(learning_rate=2e-05)
-# cnn_wcw_model = create_cnn_model()
-# cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-    
-# wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-# wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-# wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+cnn_wcw_model = create_cnn_model()
+opt = Adam(learning_rate=2e-05)
+cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-
-strategy = tf.distribute.MirroredStrategy()
-
-with strategy.scope():
-    cnn_wcw_model = create_cnn_model()
-    opt = Adam(learning_rate=2e-05)
-    cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-  
-    wcw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1)
-    wcw_model_early_stopping = EarlyStopping( monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-    
-    wcw_history = cnn_wcw_model.fit( X_train, y_train, epochs=50, batch_size = 32, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+wcw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1)
+wcw_model_early_stopping = EarlyStopping( monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+wcw_history = cnn_wcw_model.fit( X_train, y_train, epochs=50, batch_size = 32, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Weight
@@ -378,15 +365,16 @@ class_weight = {0: weight_for_0, 1: weight_for_1}
 print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
 print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
 
-with strategy.scope():
-    opt = Adam(learning_rate=2e-05)
-    cnn_cw_model = create_cnn_model()
-    cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-    cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-    cw_model_early_stopping = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-    cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
 
-# #########################################################################################################################################################################################################################################
+opt = Adam(learning_rate=2e-05)
+cnn_cw_model = create_cnn_model()
+cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+
+cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cw_model_early_stopping = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
+
+##########################################################################################################################################################################################################################################
 # # With Class Balance
 # #########################################################################################################################################################################################################################################
  
@@ -413,21 +401,20 @@ cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
 cb_train_patches = np.array(cb_train_patches)
 cb_train_labels = np.array(cb_train_labels)
 
-with strategy.scope():
-    opt = Adam(learning_rate=2e-05)
-    cnn_cb_model = create_cnn_model()
-    cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-       
-    cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-    cb_model_early_stopping = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-    
-    cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
 
-# #########################################################################################################################################################################################################################################
-# #########################################################################################################################################################################################################################################
-# # Testing
-# #########################################################################################################################################################################################################################################
-# #########################################################################################################################################################################################################################################
+ opt = Adam(learning_rate=2e-05)
+cnn_cb_model = create_cnn_model()
+cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+       
+cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cb_model_early_stopping = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+
+##########################################################################################################################################################################################################################################
+##########################################################################################################################################################################################################################################
+## Testing
+##########################################################################################################################################################################################################################################
+##########################################################################################################################################################################################################################################
 
 
 def eval (model, test_pat, test_label, model_name, feature_name, technique):
@@ -521,9 +508,10 @@ eval (cnn_cw_model, X_test, y_test, model_name = "CNN", feature_name = "Multi Fe
 eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Multi Feature Map", technique = "Class Balance")
 
 
-# #########################################################################################################################################################################################################################################
-# ## PRECISION ENSEMBLE 
-# #########################################################################################################################################################################################################################################
+
+#########################################################################################################################################################################################################################################
+## PRECISION ENSEMBLE 
+#########################################################################################################################################################################################################################################
 
 test_patches = np.array(test_patches)
 print(test_patches[0].shape)
