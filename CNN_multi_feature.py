@@ -210,14 +210,15 @@ def augmented_images(data, num_augmented_images_per_original):
         fill_mode='nearest'
     )
 
-    for i, patch in enumerate(data):
+    for patch in data:
         patch = np.expand_dims(patch, axis=0)
         temp_generator = data_augmentation.flow(patch, batch_size=1)
         
         for _ in range(num_augmented_images_per_original):
-            augmented_image = next(temp_generator)[0]  
+            augmented_image = next(temp_generator)[0]
             augmented_image = np.squeeze(augmented_image)
             augmented_images.append(augmented_image)
+
     return augmented_images
 
 #########################################################################################################################################################################################################################################
@@ -306,27 +307,39 @@ print(f" Total Test Labels: {len(test_labels)}")
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-ghosting_patches = train_patches[train_labels == 1]
-augmented_images = augmented_images(ghosting_patches, num_augmented_images_per_original=12)
+# ghosting_patches = train_patches[train_labels == 1]
+# augmented_images = augmented_images(ghosting_patches, num_augmented_images_per_original=12)
 
 # ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
 # augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=12)
 
-augmented_images_np = np.stack(augmented_images)
-augmented_labels = np.ones(len(augmented_images_np))
+# augmented_images_np = np.stack(augmented_images)
+# augmented_labels = np.ones(len(augmented_images_np))
 
 train_patches_expanded = np.expand_dims(train_patches, axis=-1)
 # augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
 
-print(f"Train Shape: {train_patches_expanded.shape}")
-print(f"AUG_Train Shape: {augmented_images_np.shape}")
+# print(f"Train Shape: {train_patches_expanded.shape}")
+# print(f"AUG_Train Shape: {augmented_images_np.shape}")
 
-train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np), axis=0)
+# train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np), axis=0)
+# train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
+
+# print(f" Total Augmented Patches: {len(train_patches_combined)}")
+# aghosting_patches = train_patches_combined[train_labels_combined == 1]
+# print(f" Total Augmented GA: {len(aghosting_patches)}")
+
+
+ghosting_patches = train_patches[train_labels == 1]
+augmented_images_list = augmented_images(ghosting_patches, num_augmented_images_per_original=12)
+augmented_images_np = np.stack(augmented_images_list)
+augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
+train_patches_expanded = np.expand_dims(train_patches, axis=-1)
+train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np_expanded), axis=0)
+augmented_labels = np.ones(len(augmented_images_np))
 train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
 
-print(f" Total Augmented Patches: {len(train_patches_combined)}")
-aghosting_patches = train_patches_combined[train_labels_combined == 1]
-print(f" Total Augmented GA: {len(aghosting_patches)}")
+
 
 X_train, X_temp, y_train, y_temp = train_test_split(train_patches_combined, train_labels_combined, test_size=0.2, random_state=42)
 
