@@ -366,53 +366,52 @@ with strategy.scope():
 # With Class Weight
 #########################################################################################################################################################################################################################################
 
-# ng = len(train_patches[train_labels == 0])
-# ga =  len(train_patches[train_labels == 1])
-# total = ng + ga
+ng = len(train_patches[train_labels == 0])
+ga =  len(train_patches[train_labels == 1])
+total = ng + ga
 
-# imbalance_ratio = ng / ga  
-# weight_for_0 = (1 / ng) * (total / 2.0)
-# weight_for_1 = (1 / ga) * (total / 2.0)
-# class_weight = {0: weight_for_0, 1: weight_for_1}
+imbalance_ratio = ng / ga  
+weight_for_0 = (1 / ng) * (total / 2.0)
+weight_for_1 = (1 / ga) * (total / 2.0)
+class_weight = {0: weight_for_0, 1: weight_for_1}
 
-# print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
-# print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
+print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
+print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
 
-# opt = Adam(learning_rate=2e-05)
-# cnn_cw_model = create_cnn_model()
-# cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-
-# cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-# cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-
-# cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
+with strategy.scope():
+    opt = Adam(learning_rate=2e-05)
+    cnn_cw_model = create_cnn_model()
+    cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+    cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_MULTI_FEATURE_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+    cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+    cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
 
 # #########################################################################################################################################################################################################################################
 # # With Class Balance
 # #########################################################################################################################################################################################################################################
  
-# combined = list(zip(CX_train, Cy_train))
-# combined = sklearn_shuffle(combined)
+combined = list(zip(CX_train, Cy_train))
+combined = sklearn_shuffle(combined)
 
-# ghosting_artifacts = [item for item in combined if item[1] == 1]
-# non_ghosting_artifacts = [item for item in combined if item[1] == 0]
+ghosting_artifacts = [item for item in combined if item[1] == 1]
+non_ghosting_artifacts = [item for item in combined if item[1] == 0]
 
-# print(f"Ghosting Artifacts: {len(ghosting_artifacts)}")
-# print(f"Non Ghosting Artifacts: {len(non_ghosting_artifacts)}")
+print(f"Ghosting Artifacts: {len(ghosting_artifacts)}")
+print(f"Non Ghosting Artifacts: {len(non_ghosting_artifacts)}")
 
-# num_ghosting_artifacts = len(ghosting_artifacts)
+num_ghosting_artifacts = len(ghosting_artifacts)
 
 
-# train_val_ghosting = ghosting_artifacts[:num_ghosting_artifacts]
-# train_val_non_ghosting = non_ghosting_artifacts[:num_ghosting_artifacts]
+train_val_ghosting = ghosting_artifacts[:num_ghosting_artifacts]
+train_val_non_ghosting = non_ghosting_artifacts[:num_ghosting_artifacts]
 
-# cb_train_dataset = train_val_ghosting + train_val_non_ghosting
-# print(f"Class balance train size {len(cb_train_dataset)}")
+cb_train_dataset = train_val_ghosting + train_val_non_ghosting
+print(f"Class balance train size {len(cb_train_dataset)}")
 
-# cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
+cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
 
-# cb_train_patches = np.array(cb_train_patches)
-# cb_train_labels = np.array(cb_train_labels)
+cb_train_patches = np.array(cb_train_patches)
+cb_train_labels = np.array(cb_train_labels)
 
 # opt = Adam(learning_rate=2e-05)
 # cnn_cb_model = create_cnn_model()
