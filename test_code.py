@@ -480,7 +480,7 @@ test_patches = test_patches.reshape((-1, 224, 224, 1))
 test_labels = np.array(test_labels)
 
 weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
-csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_Weights.csv'
+csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_Weight.csv'
 np.savetxt(csv_file_path, weights, delimiter=',')
 
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
