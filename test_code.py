@@ -274,7 +274,7 @@ print(f" Total Test Labels: {len(test_labels)}")
 ghosting_patches = train_patches[train_labels == 1]
 
 ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
-augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=12)
+augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=5)
 
 augmented_images_np = np.stack(augmented_images)
 augmented_labels = np.ones(len(augmented_images_np))
@@ -483,18 +483,18 @@ weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
 csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_Weight.csv'
 np.savetxt(csv_file_path, weights, delimiter=',')
 
-predictions = np.array([model.predict(test_patches).ravel() for model in models])
+predictions = np.array([model.predict(test_patches) for model in models])
 
-print(predictions.shape)
-print(predictions)
+print(f" Precision Prediction Shape: {predictions.shape}")
+print(f" Precision Prediction size: {len(predictions)}")
 
 weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
 predicted_classes = (weighted_predictions > 0.5).astype(int)
 
 
-true_labels = test_labels.ravel()
-print(true_labels.shape)
-print(true_labels)
+true_labels = test_labels
+print(f" Precision TRUE LABEL SHAPE: {true_labels.shape}")
+print(f" Precision TRUE LABEL {len(true_labels)}")
 
 test_acc = accuracy_score(true_labels, predicted_classes) * 100
 test_loss = log_loss(true_labels, weighted_predictions)
@@ -547,18 +547,18 @@ print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {
 #########################################################################################################################################################################################################################################
 
 predictions = np.array([model.predict(test_patches).ravel() for model in models])
-print(predictions.shape)
-print(predictions)
+print(f" Average Prediction Shape: {predictions.shape}")
+print(f" Average Prediction size: {len(predictions)}")
+
 average_predictions = np.mean(predictions, axis=0)
 
 predicted_classes = (average_predictions > 0.5).astype(int)
 
-true_labels = test_labels.ravel()
-print(true_labels.shape)
+true_labels = test_labels
+print(f" Average Test label Shape: {true_labels.shape}")
 
 test_acc = accuracy_score(true_labels, predicted_classes) * 100
 test_loss = log_loss(true_labels, weighted_predictions)
-print(test_acc)
 
 
 weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
@@ -614,9 +614,9 @@ for model in models:
     predictions.append(pred_class)
 predictions = np.array(predictions)
 
-voted_predictions = mode(predictions, axis=0)[0].flatten()
-print(voted_predictions.shape)
-print(voted_predictions)
+voted_predictions = mode(predictions, axis=0)[0]
+print(f" VOTE Prediction Shape: {voted_predictions.shape}")
+print(f" VOTE Prediction size: {len(voted_predictions)}")
 
 true_labels = test_labels.ravel()
 print(true_labels.shape)
