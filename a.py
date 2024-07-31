@@ -495,9 +495,9 @@ test_patches = test_patches.reshape((-1, 224, 224, 1))
 
 test_labels = np.array(test_labels)
 
-eval (cnn_wcw_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Baseline")
-eval (cnn_cw_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Class Weight")
-eval (cnn_cb_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Class Balance")
+# eval (cnn_wcw_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Baseline")
+# eval (cnn_cw_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Class Weight")
+# eval (cnn_cb_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Class Balance")
 
 #########################################################################################################################################################################################################################################
 ## PRECISION ENSEMBLE 
