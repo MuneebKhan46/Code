@@ -300,149 +300,140 @@ augmented_images = augmented_images(ghosting_patches, num_augmented_images_per_o
 augmented_images_np = np.stack(augmented_images)
 augmented_labels = np.ones(len(augmented_images_np))
 
-####################
-print(f" TRAIN Patches Shape: {train_patches.shape}")
-print(f" AUGMENTED Patches Shape: {augmented_images_np.shape}")
-####################
-
-train_patches_expanded = np.expand_dims(train_patches, axis=-1)
+# train_patches_expanded = np.expand_dims(train_patches, axis=-1)
 augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
 
-####################
-print(f" TRAIN Patches Shape: {train_patches_expanded.shape}")
-print(f" AUGMENTED Patches Shape: {augmented_images_np_expanded.shape}")
-####################
 
-# train_patches_combined = np.concatenate((train_patches_expanded, augmented_images_np_expanded), axis=0)
-# train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
+train_patches_combined = np.concatenate((train_patches, augmented_images_np_expanded), axis=0)
+train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
 
-# print(f" Total Augmented Patches: {len(train_patches_combined)}")
-# aghosting_patches = train_patches_combined[train_labels_combined == 1]
-# print(f" Total Augmented GA: {len(aghosting_patches)}")
+print(f" Total Augmented Patches: {len(train_patches_combined)}")
+aghosting_patches = train_patches_combined[train_labels_combined == 1]
+print(f" Total Augmented GA: {len(aghosting_patches)}")
 
-# X_train, X_temp, y_train, y_temp = train_test_split(train_patches_combined, train_labels_combined, test_size=0.2, random_state=42)
+X_train, X_temp, y_train, y_temp = train_test_split(train_patches_combined, train_labels_combined, test_size=0.2, random_state=42)
 
-# X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
-# CX_train = X_train
-# Cy_train = y_train
+CX_train = X_train
+Cy_train = y_train
 
-# print(f"X_Train Shape: {X_train.shape}")
-# print(f"y_Train Shape: {y_train.shape}")
+print(f"X_Train Shape: {X_train.shape}")
+print(f"y_Train Shape: {y_train.shape}")
 
-# print(f"X_Val Shape: {X_val.shape}")
-# print(f"y_Val Shape: {y_val.shape}")
+print(f"X_Val Shape: {X_val.shape}")
+print(f"y_Val Shape: {y_val.shape}")
 
-# print(f"X_Test Shape: {X_test.shape}")
-# print(f"y_Test Shape: {y_test.shape}")
+print(f"X_Test Shape: {X_test.shape}")
+print(f"y_Test Shape: {y_test.shape}")
 
-# #########################################################################################################################################################################################################################################
-# #########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
-# opt = Adam(learning_rate=2e-05)
-# cnn_wcw_model = pyramid_cnn(input_shape=(224, 224, 1))
-# cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+opt = Adam(learning_rate=2e-05)
+cnn_wcw_model = pyramid_cnn(input_shape=(224, 224, 1))
+cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-# wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val))
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val))
 
 
-# def eval (model, test_pat, test_label, model_name, feature_name, technique):
+def eval (model, test_pat, test_label, model_name, feature_name, technique):
     
-#     test_loss, test_acc = model.evaluate(test_pat, test_label)
-#     test_acc  = test_acc * 100
+    test_loss, test_acc = model.evaluate(test_pat, test_label)
+    test_acc  = test_acc * 100
     
-#     predictions = model.predict(test_pat)
-#     predicted_labels = np.argmax(predictions, axis=1)
+    predictions = model.predict(test_pat)
+    predicted_labels = np.argmax(predictions, axis=1)
     
-#     report = classification_report(test_label, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
+    report = classification_report(test_label, predicted_labels, output_dict=True, target_names=["Non-Ghosting Artifact", "Ghosting Artifact"])
     
-#     conf_matrix = confusion_matrix(test_label, predicted_labels)
-#     TN = conf_matrix[0, 0]
-#     FP = conf_matrix[0, 1]
-#     FN = conf_matrix[1, 0]
-#     TP = conf_matrix[1, 1]
+    conf_matrix = confusion_matrix(test_label, predicted_labels)
+    TN = conf_matrix[0, 0]
+    FP = conf_matrix[0, 1]
+    FN = conf_matrix[1, 0]
+    TP = conf_matrix[1, 1]
     
-#     total_class_0 = TN + FP
-#     total_class_1 = TP + FN
-#     correctly_predicted_0 = TN
-#     correctly_predicted_1 = TP
-    
-    
-#     accuracy_0 = (TN / total_class_0) * 100
-#     accuracy_1 = (TP / total_class_1) * 100
-    
-#     precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
-#     recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
-#     precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
-#     recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
+    total_class_0 = TN + FP
+    total_class_1 = TP + FN
+    correctly_predicted_0 = TN
+    correctly_predicted_1 = TP
     
     
-#     weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
-#     weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
+    accuracy_0 = (TN / total_class_0) * 100
+    accuracy_1 = (TP / total_class_1) * 100
     
-#     if weighted_precision + weighted_recall > 0:
-#         weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
-#     else:
-#         weighted_f1_score = 0
+    precision_0 = TN / (TN + FN) if (TN + FN) > 0 else 0
+    recall_0 = TN / (TN + FP) if (TN + FP) > 0 else 0
+    precision_1 = TP / (TP + FP) if (TP + FP) > 0 else 0
+    recall_1 = TP / (TP + FN) if (TP + FN) > 0 else 0
     
-#     weighted_f1_score  = weighted_f1_score*100
-#     weighted_precision = weighted_precision*100
-#     weighted_recall    = weighted_recall*100
     
-#     macro_precision = (precision_0 + precision_1) / 2
-#     macro_recall = (recall_0 + recall_1) / 2
+    weighted_precision = (precision_0 * total_class_0 + precision_1 * total_class_1) / (total_class_0 + total_class_1)
+    weighted_recall = (recall_0 * total_class_0 + recall_1 * total_class_1) / (total_class_0 + total_class_1)
     
-#     if macro_precision + macro_recall > 0:
-#         macro_f1_score = 2 * (macro_precision * macro_recall) / (macro_precision + macro_recall)
-#     else:
-#         macro_f1_score = 0
+    if weighted_precision + weighted_recall > 0:
+        weighted_f1_score = 2 * (weighted_precision * weighted_recall) / (weighted_precision + weighted_recall)
+    else:
+        weighted_f1_score = 0
+    
+    weighted_f1_score  = weighted_f1_score*100
+    weighted_precision = weighted_precision*100
+    weighted_recall    = weighted_recall*100
+    
+    macro_precision = (precision_0 + precision_1) / 2
+    macro_recall = (recall_0 + recall_1) / 2
+    
+    if macro_precision + macro_recall > 0:
+        macro_f1_score = 2 * (macro_precision * macro_recall) / (macro_precision + macro_recall)
+    else:
+        macro_f1_score = 0
       
-#     macro_f1_score  = macro_f1_score * 100
-#     macro_precision = macro_precision * 100
-#     macro_recall    = macro_recall * 100
+    macro_f1_score  = macro_f1_score * 100
+    macro_precision = macro_precision * 100
+    macro_recall    = macro_recall * 100
     
     
-#     TP_0 = total_class_0 * recall_0
-#     TP_1 = total_class_1 * recall_1
-#     FP_0 = total_class_0 * (1 - precision_0)
-#     FP_1 = total_class_1 * (1 - precision_1)
-#     FN_0 = total_class_0 * (1 - recall_0)
-#     FN_1 = total_class_1 * (1 - recall_1)
+    TP_0 = total_class_0 * recall_0
+    TP_1 = total_class_1 * recall_1
+    FP_0 = total_class_0 * (1 - precision_0)
+    FP_1 = total_class_1 * (1 - precision_1)
+    FN_0 = total_class_0 * (1 - recall_0)
+    FN_1 = total_class_1 * (1 - recall_1)
     
-#     micro_precision = (TP_0 + TP_1) / (TP_0 + TP_1 + FP_0 + FP_1)
-#     micro_recall = (TP_0 + TP_1) / (TP_0 + TP_1 + FN_0 + FN_1)
+    micro_precision = (TP_0 + TP_1) / (TP_0 + TP_1 + FP_0 + FP_1)
+    micro_recall = (TP_0 + TP_1) / (TP_0 + TP_1 + FN_0 + FN_1)
     
-#     if micro_precision + micro_recall > 0:
-#         micro_f1_score = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall)
-#     else:
-#         micro_f1_score = 0
+    if micro_precision + micro_recall > 0:
+        micro_f1_score = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall)
+    else:
+        micro_f1_score = 0
     
     
-#     micro_f1_score  = micro_f1_score * 100
-#     micro_precision = micro_precision * 100
-#     micro_recall    = micro_recall * 100
+    micro_f1_score  = micro_f1_score * 100
+    micro_precision = micro_precision * 100
+    micro_recall    = micro_recall * 100
     
-#     print("#############################################################################################################################################################################")
-#     print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
-#     # save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+    print("#############################################################################################################################################################################")
+    print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+    # save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
-#     class_1_precision = micro_precision
-#     models.append(model)
-#     class_1_accuracies.append(class_1_precision)
-
-
-
-# eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "Difference Map", technique = "Baseline")
+    class_1_precision = micro_precision
+    models.append(model)
+    class_1_accuracies.append(class_1_precision)
 
 
 
-# #########################################################################################################################################################################################################################################
-# #########################################################################################################################################################################################################################################
+eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "Difference Map", technique = "Baseline")
 
 
-# test_patches = np.array(test_patches)
-# test_patches = test_patches.reshape((-1, 224, 224, 1))
 
-# test_labels = np.array(test_labels)
+#########################################################################################################################################################################################################################################
+#########################################################################################################################################################################################################################################
 
-# eval (cnn_wcw_model, test_patches, test_labels, model_name = "CNN", feature_name = "Difference Map", technique = "Baseline")
+
+test_patches = np.array(test_patches)
+test_patches = test_patches.reshape((-1, 224, 224, 1))
+
+test_labels = np.array(test_labels)
+
+eval (cnn_wcw_model, test_patches, test_labels, model_name = "CNN", feature_name = "Difference Map", technique = "Baseline")
