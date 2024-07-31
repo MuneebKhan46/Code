@@ -187,18 +187,13 @@ def augmented_images(data, num_augmented_images_per_original):
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-def construct_image_pyramid(image, levels):
-    pyramid = [image]
-    for i in range(1, levels):
-        image = cv2.pyrDown(image)
-        pyramid.append(image)
-    return pyramid
-  
-
 def pyramid_cnn(input_shape=(224, 224, 1), pyramid_levels=3):
     inputs = Input(shape=input_shape)
     
-    pyramid = tf.py_function(func=lambda x: construct_image_pyramid(x.numpy(), pyramid_levels), inp=[inputs], Tout=[tf.float32] * pyramid_levels)
+    # Create pyramid levels
+    pyramid = [inputs]
+    for i in range(1, pyramid_levels):
+        pyramid.append(layers.AveragePooling2D(2**i)(inputs))
     
     features = []
     for i, level in enumerate(pyramid):
@@ -218,10 +213,10 @@ def pyramid_cnn(input_shape=(224, 224, 1), pyramid_levels=3):
     
     combined = layers.Concatenate()(features)
     
-
     x = layers.Dense(128, activation='elu')(combined)
     x = layers.Dropout(0.5)(x)
     outputs = layers.Dense(1, activation='sigmoid')(x)
+    
     model = Model(inputs=inputs, outputs=outputs)
     return model
 
@@ -292,17 +287,12 @@ print(f" Total Test Labels: {len(test_labels)}")
 ghosting_patches = train_patches[train_labels == 1]
 print(f" G.A Patches Shape: {ghosting_patches.shape}")
 
-# ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
-# print(f" G.A Expanded Patches Shape: {ghosting_patches_expanded.shape}")
-# augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=5)
-
-augmented_images = augmented_images(ghosting_patches, num_augmented_images_per_original=5)
+augmented_images = augmented_images(ghosting_patches, num_augmented_images_per_original=12)
 augmented_images_np = np.stack(augmented_images)
 augmented_labels = np.ones(len(augmented_images_np))
 
-# train_patches_expanded = np.expand_dims(train_patches, axis=-1)
 augmented_images_np_expanded = np.expand_dims(augmented_images_np, axis=-1)
-
+print(f" AUGMENTED G.A Patches Shape: {augmented_images_np_expanded.shape}")
 
 train_patches_combined = np.concatenate((train_patches, augmented_images_np_expanded), axis=0)
 train_labels_combined = np.concatenate((train_labels, augmented_labels), axis=0)
