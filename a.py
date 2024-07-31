@@ -229,9 +229,8 @@ def pyramid_cnn(input_shape=(224, 224, 1), pyramid_levels=3):
     x = layers.Dense(128, activation='elu')(combined)
     x = layers.Dropout(0.5)(x)
     outputs = layers.Dense(1, activation='sigmoid')(x)
-    
-   model = Model(inputs=inputs, outputs=outputs)
-   return model
+    model = Model(inputs=inputs, outputs=outputs)
+    return model
 
 
 def prepare_data(data, labels):
