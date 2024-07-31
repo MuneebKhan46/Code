@@ -326,7 +326,7 @@ cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accur
 
 wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_PYRAMID_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Weight
@@ -351,7 +351,7 @@ cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accura
 cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_PYRAMID_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
-cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
+cw_history = cnn_cw_model.fit(X_train, y_train, epochs=5, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
 
 #########################################################################################################################################################################################################################################
 # With Class Balance
@@ -388,7 +388,7 @@ cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accura
 cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_PYRAMID_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
 cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
 
-cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=5, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
 
 
 
@@ -470,7 +470,7 @@ def eval (model, test_pat, test_label, model_name, feature_name, technique):
     micro_precision = micro_precision * 100
     micro_recall    = micro_recall * 100
     
-    print("#############################################################################################################################################################################")
+    print(f"########################################################################{technique}########################{feature_name}#############################################################################")
     print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
     # save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
 
@@ -480,9 +480,9 @@ def eval (model, test_pat, test_label, model_name, feature_name, technique):
 
 
 
-eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "Difference Map", technique = "Baseline")
-eval (cnn_cw_model, X_test, y_test, model_name = "CNN", feature_name = "Difference Map", technique = "Class Weight")
-eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Difference Map", technique = "Class Balance")
+eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "AUGMENTED DATASET TESTING", technique = "Baseline")
+eval (cnn_cw_model, X_test, y_test, model_name = "CNN", feature_name = "AUGMENTED DATASET TESTING", technique = "Class Weight")
+eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "AUGMENTED DATASET TESTING", technique = "Class Balance")
 
 
 #########################################################################################################################################################################################################################################
@@ -494,7 +494,193 @@ test_patches = test_patches.reshape((-1, 224, 224, 1))
 
 test_labels = np.array(test_labels)
 
-eval (cnn_wcw_model, test_patches, test_labels, model_name = "CNN", feature_name = "Difference Map", technique = "Baseline")
-eval (cnn_cw_model, test_patches, test_labels, model_name = "CNN", feature_name = "Difference Map", technique = "Class Weight")
-eval (cnn_cb_model, test_patches, test_labels, model_name = "CNN", feature_name = "Difference Map", technique = "Class Balance")
+eval (cnn_wcw_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Baseline")
+eval (cnn_cw_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Class Weight")
+eval (cnn_cb_model, test_patches, test_labels, model_name = "CNN", feature_name = "ORIGINAL DATASET TESTING", technique = "Class Balance")
 
+
+
+
+
+
+# weights = np.array(class_1_accuracies) / np.sum(class_1_accuracies)
+# csv_file_path = '/ghosting-artifact-metric/Project/Models/CNN_Weight.csv'
+# np.savetxt(csv_file_path, weights, delimiter=',')
+
+# predictions = np.array([model.predict(test_patches) for model in models])
+
+# print(f" Precision Prediction Shape: {predictions.shape}")
+# print(f" Precision Prediction size: {len(predictions)}")
+
+# weighted_predictions = np.tensordot(weights, predictions, axes=([0], [0]))
+# predicted_classes = (weighted_predictions > 0.5).astype(int)
+
+
+# true_labels = test_labels
+# print(f" Precision TRUE LABEL SHAPE: {true_labels.shape}")
+# print(f" Precision TRUE LABEL {len(true_labels)}")
+
+# test_acc = accuracy_score(true_labels, predicted_classes) * 100
+# test_loss = log_loss(true_labels, weighted_predictions)
+
+# weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
+
+# weighted_precision *= 100
+# weighted_recall *= 100
+# weighted_f1_score *= 100
+
+
+# macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='macro')
+
+# macro_f1_score  = macro_f1_score * 100
+# macro_precision = macro_precision * 100
+# macro_recall    = macro_recall * 100
+
+
+# micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
+
+# micro_f1_score  = micro_f1_score * 100
+# micro_precision = micro_precision * 100
+# micro_recall    = micro_recall * 100
+
+# conf_matrix = confusion_matrix(true_labels, predicted_classes)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
+
+# total_class_0 = TN + FN
+# total_class_1 = TP + FP
+# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
+
+# model_name = "CNN"
+# feature_name = "Difference Map"
+# technique = "Precision Ensemble"
+
+# # save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+# print("####################################################################################################################################################################################################")
+# print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+
+
+
+# #########################################################################################################################################################################################################################################
+# ## AVERAGE ENSEMBLE 
+# #########################################################################################################################################################################################################################################
+
+# predictions = np.array([model.predict(test_patches).ravel() for model in models])
+# print(f" Average Prediction Shape: {predictions.shape}")
+# print(f" Average Prediction size: {len(predictions)}")
+
+# average_predictions = np.mean(predictions, axis=0)
+
+# predicted_classes = (average_predictions > 0.5).astype(int)
+
+# true_labels = test_labels
+# print(f" Average Test label Shape: {true_labels.shape}")
+
+# test_acc = accuracy_score(true_labels, predicted_classes) * 100
+# test_loss = log_loss(true_labels, weighted_predictions)
+
+
+# weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='weighted')
+
+# weighted_precision *= 100
+# weighted_recall *= 100
+# weighted_f1_score *= 100
+
+
+# macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='macro')
+
+# macro_f1_score  = macro_f1_score * 100
+# macro_precision = macro_precision * 100
+# macro_recall    = macro_recall * 100
+
+
+# micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, predicted_classes, average='micro')
+
+# micro_f1_score  = micro_f1_score * 100
+# micro_precision = micro_precision * 100
+# micro_recall    = micro_recall * 100
+
+# conf_matrix = confusion_matrix(true_labels, predicted_classes)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
+
+
+# total_class_0 = TN + FN
+# total_class_1 = TP + FP
+# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
+
+# print("####################################################################################################################################################################################################")
+# print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+
+# model_name = "CNN"
+# feature_name = "Difference Map"
+# technique = "Average Ensemble"
+# # save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, macro_precision, macro_recall, macro_f1_score, micro_precision, micro_recall, micro_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path)
+
+
+# #########################################################################################################################################################################################################################################
+# ## VOTE ENSEMBLE 
+# #########################################################################################################################################################################################################################################
+
+# predictions = []
+# for model in models:
+#     pred = model.predict(test_patches)
+#     pred_class = (pred[:, 0] > 0.5).astype(int)
+#     predictions.append(pred_class)
+# predictions = np.array(predictions)
+
+# voted_predictions = mode(predictions, axis=0)[0]
+# print(f" VOTE Prediction Shape: {voted_predictions.shape}")
+# print(f" VOTE Prediction size: {len(voted_predictions)}")
+
+# true_labels = test_labels.ravel()
+# print(true_labels.shape)
+
+
+# test_acc = accuracy_score(true_labels, voted_predictions) * 100
+# test_loss = log_loss(true_labels, voted_predictions)
+
+# weighted_precision, weighted_recall, weighted_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='weighted')
+
+# weighted_precision *= 100
+# weighted_recall *= 100
+# weighted_f1_score *= 100
+
+# macro_precision, macro_recall, macro_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='macro')
+
+# macro_f1_score  = macro_f1_score * 100
+# macro_precision = macro_precision * 100
+# macro_recall    = macro_recall * 100
+
+# micro_precision, micro_recall, micro_f1_score, _ = precision_recall_fscore_support(true_labels, voted_predictions, average='micro')
+
+# micro_f1_score  = micro_f1_score * 100
+# micro_precision = micro_precision * 100
+# micro_recall    = micro_recall * 100
+
+# conf_matrix = confusion_matrix(true_labels, voted_predictions)
+# TN = conf_matrix[0, 0]
+# FP = conf_matrix[0, 1]
+# FN = conf_matrix[1, 0]
+# TP = conf_matrix[1, 1]
+
+# total_class_0 = TN + FN
+# total_class_1 = TP + FP
+# accuracy_0 = (TN / total_class_0) * 100 if total_class_0 > 0 else 0
+# accuracy_1 = (TP / total_class_1) * 100 if total_class_1 > 0 else 0
+
+# print("####################################################################################################################################################################################################")
+# print(f"Accuracy: {test_acc:.2f}% | Precision: {micro_precision:.2f}%, Recall: {micro_recall:.2f}%, F1-score: {micro_f1_score:.2f}%, Loss: {test_loss:.4f}, N.G.A Accuracy: {accuracy_0:.2f}%, G.A Accuracy: {accuracy_1:.2f}%")
+
+# model_name = "CNN"
+# feature_name = "Difference Map"
+# technique = "Vote Based Ensemble"
