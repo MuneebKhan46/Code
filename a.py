@@ -330,6 +330,9 @@ opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = pyramid_cnn(input_shape=(224, 224, 1))
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val))
+
+
 def eval (model, test_pat, test_label, model_name, feature_name, technique):
     
     test_loss, test_acc = model.evaluate(test_pat, test_label)
