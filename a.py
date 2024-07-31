@@ -324,7 +324,74 @@ opt = Adam(learning_rate=2e-05)
 cnn_wcw_model = pyramid_cnn(input_shape=(224, 224, 1))
 cnn_wcw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 
-wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=5, validation_data=(X_val, y_val))
+wcw_model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_PYRAMID_wCW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+wcw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+wcw_history = cnn_wcw_model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint, wcw_model_early_stopping])
+
+#########################################################################################################################################################################################################################################
+# With Class Weight
+#########################################################################################################################################################################################################################################
+
+ng = len(train_patches[train_labels == 0])
+ga =  len(train_patches[train_labels == 1])
+total = ng + ga
+
+imbalance_ratio = ng / ga  
+weight_for_0 = (1 / ng) * (total / 2.0)
+weight_for_1 = (1 / ga) * (total / 2.0)
+class_weight = {0: weight_for_0, 1: weight_for_1}
+
+print('Weight for class 0 (Non-ghosting): {:.2f}'.format(weight_for_0))
+print('Weight for class 1 (Ghosting): {:.2f}'.format(weight_for_1))
+
+opt = Adam(learning_rate=2e-05)
+cnn_cw_model =  pyramid_cnn(input_shape=(224, 224, 1))
+cnn_cw_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+
+cw_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_PYRAMID_CW.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cw_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+
+cw_history = cnn_cw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cw_model_checkpoint, cw_model_early_stopping])
+
+#########################################################################################################################################################################################################################################
+# With Class Balance
+#########################################################################################################################################################################################################################################
+ 
+combined = list(zip(CX_train, Cy_train))
+combined = sklearn_shuffle(combined)
+
+ghosting_artifacts = [item for item in combined if item[1] == 1]
+non_ghosting_artifacts = [item for item in combined if item[1] == 0]
+
+print(f"Ghosting Artifacts: {len(ghosting_artifacts)}")
+print(f"Non Ghosting Artifacts: {len(non_ghosting_artifacts)}")
+
+num_ghosting_artifacts = len(ghosting_artifacts)
+
+
+train_val_ghosting = ghosting_artifacts[:num_ghosting_artifacts]
+train_val_non_ghosting = non_ghosting_artifacts[:num_ghosting_artifacts]
+
+cb_train_dataset = train_val_ghosting + train_val_non_ghosting
+print(f"Class balance train size {len(cb_train_dataset)}")
+
+cb_train_patches, cb_train_labels = zip(*cb_train_dataset)
+
+cb_train_patches = np.array(cb_train_patches)
+cb_train_labels = np.array(cb_train_labels)
+
+opt = Adam(learning_rate=2e-05)
+cnn_cb_model = pyramid_cnn(input_shape=(224, 224, 1))
+cnn_cb_model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+
+
+cb_model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Project/Models/CNN_PYRAMID_CB.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+cb_model_early_stopping = keras.callbacks.EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, restore_best_weights=True)
+
+cb_history = cnn_cb_model.fit(cb_train_patches, cb_train_labels, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[cb_model_checkpoint, cb_model_early_stopping])
+
+
+
 
 
 def eval (model, test_pat, test_label, model_name, feature_name, technique):
@@ -414,7 +481,8 @@ def eval (model, test_pat, test_label, model_name, feature_name, technique):
 
 
 eval (cnn_wcw_model, X_test, y_test, model_name = "CNN", feature_name = "Difference Map", technique = "Baseline")
-
+eval (cnn_cw_model, X_test, y_test, model_name = "CNN", feature_name = "Difference Map", technique = "Class Weight")
+eval (cnn_cb_model, X_test, y_test, model_name = "CNN", feature_name = "Difference Map", technique = "Class Balance")
 
 
 #########################################################################################################################################################################################################################################
@@ -427,3 +495,6 @@ test_patches = test_patches.reshape((-1, 224, 224, 1))
 test_labels = np.array(test_labels)
 
 eval (cnn_wcw_model, test_patches, test_labels, model_name = "CNN", feature_name = "Difference Map", technique = "Baseline")
+eval (cnn_cw_model, test_patches, test_labels, model_name = "CNN", feature_name = "Difference Map", technique = "Class Weight")
+eval (cnn_cb_model, test_patches, test_labels, model_name = "CNN", feature_name = "Difference Map", technique = "Class Balance")
+
