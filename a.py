@@ -293,8 +293,8 @@ ghosting_patches = train_patches[train_labels == 1]
 
 print(f" G.A Patches Shape: {ghosting_patches.shape}")
 
-ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
-print(f" G.A Expanded Patches Shape: {ghosting_patches_expanded.shape}")
+# ghosting_patches_expanded = np.expand_dims(ghosting_patches, axis=-1)
+# print(f" G.A Expanded Patches Shape: {ghosting_patches_expanded.shape}")
 
 augmented_images = augmented_images(ghosting_patches_expanded, num_augmented_images_per_original=5)
 
