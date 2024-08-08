@@ -29,7 +29,7 @@ class_1_accuracies = []
 
 original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/original'
 denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
-csv_path     = '/FINAL DATASET/Non_Zeros_Classified_label_filtered.csv'
+csv_path     = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
