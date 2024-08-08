@@ -420,13 +420,15 @@ class CNN_Net(tf.keras.Model):
         return x
 
 
-opt = Adam(learning_rate=2e-6)
-model = CNN_Net()
-model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-model.build(input_shape=(None, 224, 224, 1))
-# model.summary()
-model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Model/CNN.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-history = model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[model_checkpoint])
+strategy = tf.distribute.MirroredStrategy()
+with strategy.scope():
+    opt = Adam(learning_rate=2e-6)
+    model = CNN_Net()
+    model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+    model.build(input_shape=(None, 224, 224, 1))
+    # model.summary()
+    model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Model/CNN.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
+    history = model.fit(X_train, y_train, epochs=50, validation_data=(X_val, y_val), callbacks=[model_checkpoint])
 
 # history = cnn_wcw_model.fit(X_train, y_train, epochs=50, class_weight=class_weight, validation_data=(X_val, y_val), callbacks=[wcw_model_checkpoint])
 
