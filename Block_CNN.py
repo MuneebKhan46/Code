@@ -192,7 +192,19 @@ class CNN_Net(nn.Module):
         self.conv_6 = nn.Conv2d(k*4, k*2, 1, 1, 0, bias=False)
         self.bn6 = nn.BatchNorm2d(k*2)
 
-        self.conv_7 = nn.Conv2d(k*2, COLOR_CHANNELS, 1, 1, 0, bias=False)
+        self.layer_8 = BottleNeck(k*2, k*2)
+        
+        self.conv_7 = nn.Conv2d(k*2, k, 1, 1, 0, bias=False)
+        self.bn7 = nn.BatchNorm2d(k)
+
+        self.layer_9 = BottleNeck(k, k)
+        
+        # self.conv_8 = nn.Conv2d(k*2, COLOR_CHANNELS, 1, 1, 0, bias=False)
+        
+        self.conv_8 = nn.Conv2d(k, COLOR_CHANNELS, 1, 1, 0, bias=False)
+        self.sig = nn.Sigmoid()
+
+        self.relu = nn.LeakyReLU(0.1)
         
     def forward(self, x):
         x = x.squeeze(1)  
@@ -209,7 +221,14 @@ class CNN_Net(nn.Module):
         out = F.relu(self.bn5(self.conv_5(out)))
         out = self.layer_7(out)
         out = F.relu(self.bn6(self.conv_6(out)))
-        out = torch.sigmoid(self.conv_7(out))  
+        out = F.layer_8(x)
+        out = F.relu(self.bn7(self.conv_7(x)))
+        out = F.layer_9(x)
+        out = F.conv_8(out)
+        out = F.sig(out)
+        out = out * 255
+
+        # out = torch.sigmoid(self.conv_8(out))  
     
         return out
 
@@ -256,7 +275,7 @@ for epoch in range(EPOCHS):
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         early_stopping_counter = 0
-        torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'best_model.pth'))
+        torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'Best_model.pth'))
         print(f"New best model saved with validation loss: {val_loss:.4f}")
     else:
         early_stopping_counter += 1
@@ -268,7 +287,7 @@ for epoch in range(EPOCHS):
     scheduler.step(val_loss)
 
 
-model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'best_model.pth')))
+model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'Best_model.pth')))
 model.eval()
 
 psnr_scores, ssim_scores = [], []
