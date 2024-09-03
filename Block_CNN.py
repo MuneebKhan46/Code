@@ -20,7 +20,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "CPU")
 
 IMAGE_SIZE = 224
 PATCH_SIZE = 224
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 LEARNING_RATE = 1e-3
 weight_decay = 1e-4
 EPOCHS = 50
