@@ -219,7 +219,7 @@ class CNN_Net(nn.Module):
 
 
 model = CNN_Net()
-model = nn.DataParallel(model)
+# model = nn.DataParallel(model)
 # model = model.cuda()
 model = model.to(device)
 
