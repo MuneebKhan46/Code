@@ -221,11 +221,11 @@ class CNN_Net(nn.Module):
         out = F.relu(self.bn5(self.conv_5(out)))
         out = self.layer_7(out)
         out = F.relu(self.bn6(self.conv_6(out)))
-        out = F.layer_8(x)
-        out = F.relu(self.bn7(self.conv_7(x)))
-        out = F.layer_9(x)
-        out = F.conv_8(out)
-        out = F.sig(out)
+        out = self.layer_8(out)  
+        out = F.relu(self.bn7(self.conv_7(out)))
+        out = self.layer_9(out)  
+        out = self.conv_8(out)   
+        out = self.sig(out)      
         out = out * 255
 
         # out = torch.sigmoid(self.conv_8(out))  
