@@ -18,8 +18,9 @@ from skimage.metrics import structural_similarity as ssim
 
 IMAGE_SIZE = 224
 PATCH_SIZE = 224
-BATCH_SIZE = 4
+BATCH_SIZE = 256
 LEARNING_RATE = 0.001
+weight_decay = 1e-4
 EPOCHS = 50
 COLOR_CHANNELS = 3
 RESULTS_DIR = '/ghosting-artifact-metric/Code/'
@@ -215,7 +216,7 @@ model = nn.DataParallel(model)
 model = model.cuda()
 
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=weight_decay)
 
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3)
 early_stopping_patience = 10
@@ -264,57 +265,32 @@ for epoch in range(EPOCHS):
     scheduler.step(val_loss)
 
 
-# model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'best_model.pth')))
-# model.eval()
+model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'best_model.pth')))
+model.eval()
 
-# psnr_scores, ssim_scores = [], []
+psnr_scores, ssim_scores = [], []
 
-# with torch.no_grad():
-#     for inputs, targets in test_loader:
-#         inputs, targets = inputs.cuda(), targets.cuda()
-#         outputs = model(inputs)
-#         outputs = outputs.cpu().numpy()
-#         targets = targets.cpu().numpy()
+with torch.no_grad():
+    for inputs, targets in test_loader:
+        inputs, targets = inputs.cuda(), targets.cuda()
+        outputs = model(inputs)
+        outputs = outputs.cpu().numpy()
+        targets = targets.cpu().numpy()
 
-#         for i in range(len(outputs)):
-#             psnr_scores.append(psnr(targets[i], outputs[i]))
-#             # ssim_scores.append(ssim(targets[i], outputs[i], multichannel=True))
+        for i in range(len(outputs)):
+            psnr_scores.append(peak_signal_noise_ratio(targets[i], outputs[i]))
+            
+            patch_size = min(outputs[i].shape[0], outputs[i].shape[1])
+            win_size = min(7, patch_size) 
+            
+            if win_size >= 3:
+                ssim_val = ssim(targets[i], outputs[i], win_size=win_size, channel_axis=-1, data_range=1.0)
+                ssim_scores.append(ssim_val)
+            else:
+                print(f"Skipping SSIM for patch {i} due to insufficient size")
 
-# avg_psnr = np.mean(psnr_scores)
-# # avg_ssim = np.mean(ssim_scores)
+avg_psnr = np.mean(psnr_scores)
+avg_ssim = np.mean(ssim_scores) if ssim_scores else 0
 
-# print(f"Average PSNR: {avg_psnr:.4f}")
-# # print(f"Average SSIM: {avg_ssim:.4f}")
-
-
-
-
-
-
-
-
-
-# from skimage.metrics import structural_similarity as ssim
-
-# psnr_scores, ssim_scores = [], []
-
-# with torch.no_grad():
-#     for inputs, targets in test_loader:
-#         inputs, targets = inputs.cuda(), targets.cuda()
-#         outputs = model(inputs)
-#         outputs = outputs.cpu().numpy()
-#         targets = targets.cpu().numpy()
-
-#         for i in range(len(outputs)):
-#             psnr_scores.append(peak_signal_noise_ratio(targets[i], outputs[i]))
-#             if min(outputs[i].shape[:2]) >= 7:  # Ensure patch size is large enough
-#                 ssim_scores.append(ssim(targets[i], outputs[i], multichannel=True, win_size=7))
-#             else:
-#                 print(f"Skipping SSIM for patch {i} due to insufficient size")
-
-# avg_psnr = np.mean(psnr_scores)
-# avg_ssim = np.mean(ssim_scores)
-
-# print(f"Average PSNR: {avg_psnr:.4f}")
-# print(f"Average SSIM: {avg_ssim:.4f}")
-
+print(f"Average PSNR: {avg_psnr:.4f}")
+print(f"Average SSIM: {avg_ssim:.4f}")
