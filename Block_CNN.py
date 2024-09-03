@@ -281,8 +281,8 @@ with torch.no_grad():
     for inputs, targets in test_loader:
         inputs, targets = inputs.to(device), targets.to(device)
         outputs = model(inputs)
-        outputs = outputs..cpu().numpy()
-        targets = targets..cpu().numpy()
+        outputs = outputs.cpu().numpy()
+        targets = targets.cpu().numpy()
 
         for i in range(len(outputs)):
             psnr_scores.append(peak_signal_noise_ratio(targets[i], outputs[i]))
