@@ -210,17 +210,17 @@ class CNN_Net(nn.Module):
         return out
 
 
-# model = CNN_Net()
-# model = nn.DataParallel(model)
-# model = model.cuda()
+model = CNN_Net()
+model = nn.DataParallel(model)
+model = model.cuda()
 
-# criterion = nn.MSELoss()
-# optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-# scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3)
-# early_stopping_patience = 10
-# best_val_loss = float('inf')
-# epochs_no_improve = 0
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3)
+early_stopping_patience = 10
+best_val_loss = float('inf')
+epochs_no_improve = 0
 
 # for epoch in range(EPOCHS):
 #     model.train()
