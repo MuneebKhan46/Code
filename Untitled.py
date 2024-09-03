@@ -77,8 +77,7 @@ def extract_patches_from_rgb_image(image_path: str, patch_size: int = 224):
             if patch.shape[0] < patch_size or patch.shape[1] < patch_size:
                 patch = np.pad(patch, ((0, patch_size - patch.shape[0]), (0, patch_size - patch.shape[1]), (0, 0)), 'constant')
             patches.append(patch)
-            patch_numbers.append(patch_number)
-            patch_number += 1
+            
 
     return patches 
 
