@@ -269,7 +269,7 @@ for epoch in range(EPOCHS):
 
 
 
-model.load_state_dict(torch.load(os.path.join(CHECKPOINT_DIR, '/ghosting-artifact-metric/Code/best_model.pth')))
+model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'best_model.pth')))
 model.eval()
 
 psnr_scores, ssim_scores = [], []
