@@ -285,7 +285,7 @@ with torch.no_grad():
         targets = targets.cpu().numpy()
 
         for i in range(len(outputs)):
-            psnr_scores.append(peak_signal_noise_ratio(targets[i], outputs[i]))
+            psnr_scores.append(psnr(targets[i], outputs[i]))
             
             patch_size = min(outputs[i].shape[0], outputs[i].shape[1])
             win_size = min(7, patch_size) 
