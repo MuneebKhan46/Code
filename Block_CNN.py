@@ -18,7 +18,7 @@ from skimage.metrics import structural_similarity as ssim
 
 IMAGE_SIZE = 224
 PATCH_SIZE = 224
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 LEARNING_RATE = 0.001
 weight_decay = 1e-4
 EPOCHS = 50
@@ -118,10 +118,14 @@ dataset = CustomDataset(original_dir, denoised_dir, csv_path, transform=transfor
 train_data, temp_data = train_test_split(dataset, test_size=0.2, random_state=42)
 val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42)
 
-train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
-val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
-test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
+train_loader = DataLoader(train_data,  shuffle=True)
+val_loader = DataLoader(val_data, shuffle=False)
+test_loader = DataLoader(test_data, shuffle=False)
 
+
+# train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
+# val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
+# test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 
 class BottleNeck(nn.Module):
     def __init__(self, inplanes, planes, stride=1):
