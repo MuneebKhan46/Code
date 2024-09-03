@@ -13,8 +13,8 @@ import torch.nn.functional as F
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 from sklearn.model_selection import train_test_split
-from skimage.metrics import peak_signal_noise_ratio, structural_similarity
-
+from skimage.metrics import peak_signal_noise_ratio as psnr
+from skimage.metrics import structural_similarity as ssim
 
 IMAGE_SIZE = 224
 PATCH_SIZE = 224
