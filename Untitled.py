@@ -255,7 +255,7 @@ for epoch in range(EPOCHS):
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         early_stopping_counter = 0
-        torch.save(model.state_dict(), os.path.join(CHECKPOINT_DIR, 'best_model.pth'))
+        torch.save(model.state_dict(), os.path.join(CHECKPOINT_DIR, '/ghosting-artifact-metric/Code/best_model.pth'))
         print(f"New best model saved with validation loss: {val_loss:.4f}")
     else:
         early_stopping_counter += 1
