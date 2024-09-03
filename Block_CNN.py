@@ -230,46 +230,46 @@ early_stopping_patience = 10
 best_val_loss = float('inf')
 epochs_no_improve = 0
 
-for epoch in range(EPOCHS):
-    model.train()
-    train_loss = 0.0
-    for inputs, targets in train_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
-        loss.backward()
-        optimizer.step()
-        train_loss += loss.item()
+# for epoch in range(EPOCHS):
+#     model.train()
+#     train_loss = 0.0
+#     for inputs, targets in train_loader:
+#         inputs, targets = inputs.to(device), targets.to(device)
+#         optimizer.zero_grad()
+#         outputs = model(inputs)
+#         loss = criterion(outputs, targets)
+#         loss.backward()
+#         optimizer.step()
+#         train_loss += loss.item()
 
-    train_loss /= len(train_loader)
-    print(f"Epoch {epoch+1}/{EPOCHS}, Training Loss: {train_loss:.4f}")
+#     train_loss /= len(train_loader)
+#     print(f"Epoch {epoch+1}/{EPOCHS}, Training Loss: {train_loss:.4f}")
 
-    model.eval()
-    val_loss = 0.0
-    with torch.no_grad():
-        for inputs, targets in val_loader:
-            inputs, targets = inputs.to(device), targets.to(device)
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
-            val_loss += loss.item()
+#     model.eval()
+#     val_loss = 0.0
+#     with torch.no_grad():
+#         for inputs, targets in val_loader:
+#             inputs, targets = inputs.to(device), targets.to(device)
+#             outputs = model(inputs)
+#             loss = criterion(outputs, targets)
+#             val_loss += loss.item()
 
-    val_loss /= len(val_loader)
-    print(f"Epoch {epoch+1}/{EPOCHS}, Validation Loss: {val_loss:.4f}")
+#     val_loss /= len(val_loader)
+#     print(f"Epoch {epoch+1}/{EPOCHS}, Validation Loss: {val_loss:.4f}")
 
-    if val_loss < best_val_loss:
-        best_val_loss = val_loss
-        early_stopping_counter = 0
-        torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'best_model.pth'))
-        print(f"New best model saved with validation loss: {val_loss:.4f}")
-    else:
-        early_stopping_counter += 1
+#     if val_loss < best_val_loss:
+#         best_val_loss = val_loss
+#         early_stopping_counter = 0
+#         torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'best_model.pth'))
+#         print(f"New best model saved with validation loss: {val_loss:.4f}")
+#     else:
+#         early_stopping_counter += 1
 
-    if early_stopping_counter >= early_stopping_patience:
-        print("Early stopping triggered.")
-        break
+#     if early_stopping_counter >= early_stopping_patience:
+#         print("Early stopping triggered.")
+#         break
 
-    scheduler.step(val_loss)
+#     scheduler.step(val_loss)
 
 
 model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'best_model.pth')))
