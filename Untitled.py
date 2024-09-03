@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
 
 
 import os
@@ -22,23 +18,17 @@ from sklearn.model_selection import train_test_split
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
 
-# In[2]:
-
-
 IMAGE_SIZE = 224
 PATCH_SIZE = 224
 BATCH_SIZE = 4
 LEARNING_RATE = 0.001
 EPOCHS = 50
 COLOR_CHANNELS = 3
-RESULTS_DIR = "/WACV Paper/Untitled Folder 1/"
+RESULTS_DIR = '/ghosting-artifact-metric/Code/'
 CHECKPOINT_INTERVAL = 5 
 
 if not os.path.exists(RESULTS_DIR):
     os.makedirs(RESULTS_DIR)
-
-
-# In[3]:
 
 
 class CustomDataset(Dataset):
@@ -119,23 +109,14 @@ def load_data_from_csv(csv_path, original_dir, denoised_dir):
     return all_original_patches, all_denoised_patches
 
 
-# In[5]:
-
-
 transform = transforms.Compose([
     transforms.ToTensor(),
 ])
 
 
-# In[6]:
-
-
-original_dir = '/FINAL DATASET/maid-dataset-high-frequency/original'
-denoised_dir = '/FINAL DATASET/maid-dataset-high-frequency/denoised'
-csv_path = '/FINAL DATASET/Non_Zeros_Classified_label_filtered.csv'
-
-
-# In[7]:
+original_dir = '/ghosting-artifact-metric/m-gaid-dataset-high-frequency/original'
+denoised_dir = '/ghosting-artifact-metric/m-gaid-dataset-high-frequency/denoised'
+csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
 
 dataset = CustomDataset(original_dir, denoised_dir, csv_path, transform=transform)
@@ -146,9 +127,6 @@ val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42
 train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
 test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
-
-
-# In[8]:
 
 
 class BottleNeck(nn.Module):
@@ -180,65 +158,6 @@ class BottleNeck(nn.Module):
         out = F.relu(out)
 
         return out
-
-# class CNN_Net(nn.Module):
-#     def __init__(self):
-#         super(CNN_Net, self).__init__()
-#         k = 64
-
-#         self.conv_1 = nn.Conv2d(COLOR_CHANNELS, k, (3, 5), (1, 1), bias=False)
-#         self.bn1 = nn.BatchNorm2d(k)
-
-#         self.layer_1 = BottleNeck(k, k)
-#         self.layer_2 = BottleNeck(k, k)
-
-#         self.conv_2 = nn.Conv2d(k, k*2, (3, 5), (1, 1), bias=False)
-#         self.bn2 = nn.BatchNorm2d(k*2)
-
-#         self.layer_3 = BottleNeck(k*2, k*2)
-
-#         self.conv_3 = nn.Conv2d(k*2, k*4, (1, 5), (1, 1), bias=False)
-#         self.bn3 = nn.BatchNorm2d(k*4)
-
-#         self.layer_4 = BottleNeck(k*4, k*4)
-#         self.layer_5 = BottleNeck(k*4, k*4)
-
-#         self.conv_4 = nn.Conv2d(k*4, k*8, (1, 1), (1, 1), bias=False)
-#         self.bn4 = nn.BatchNorm2d(k*8)
-        
-#         self.layer_6 = BottleNeck(k*8, k*8)
-
-#         self.conv_5 = nn.Conv2d(k*8, k*4, 1, 1, 0, bias=False)
-#         self.bn5 = nn.BatchNorm2d(k*4)
-
-#         self.layer_7 = BottleNeck(k*4, k*4)
-
-#         self.conv_6 = nn.Conv2d(k*4, k*2, 1, 1, 0, bias=False)
-#         self.bn6 = nn.BatchNorm2d(k*2)
-
-#         self.conv_7 = nn.Conv2d(k*2, COLOR_CHANNELS, 1, 1, 0, bias=False)
-        
-#     def forward(self, x):
-#         x = x.squeeze(1)  # Removes the dimension with size 1 at index 1
-#         out = F.relu(self.bn1(self.conv_1(x)))
-#         out = self.layer_1(out)
-#         out = self.layer_2(out)
-#         out = F.relu(self.bn2(self.conv_2(out)))
-#         out = self.layer_3(out)
-#         out = F.relu(self.bn3(self.conv_3(out)))
-#         out = self.layer_4(out)
-#         out = self.layer_5(out)
-#         out = F.relu(self.bn4(self.conv_4(out)))
-#         out = self.layer_6(out)
-#         out = F.relu(self.bn5(self.conv_5(out)))
-#         out = self.layer_7(out)
-#         out = F.relu(self.bn6(self.conv_6(out)))
-#         out = torch.sigmoid(self.conv_7(out))  
-    
-#         return out
-
-
-# In[9]:
 
 
 class CNN_Net(nn.Module):
@@ -299,9 +218,6 @@ class CNN_Net(nn.Module):
         return out
 
 
-# In[10]:
-
-
 model = CNN_Net().cuda()  
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
@@ -310,9 +226,6 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3)
 early_stopping_patience = 10
 best_val_loss = float('inf')
 epochs_no_improve = 0
-
-
-# In[ ]:
 
 
 for epoch in range(EPOCHS):
@@ -357,88 +270,9 @@ for epoch in range(EPOCHS):
     scheduler.step(val_loss)
 
 
-# In[ ]:
 
 
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-model.load_state_dict(torch.load(os.path.join(CHECKPOINT_DIR, 'best_model.pth')))
+model.load_state_dict(torch.load(os.path.join(CHECKPOINT_DIR, '/ghosting-artifact-metric/Code/best_model.pth')))
 model.eval()
 
 psnr_scores, ssim_scores = [], []
@@ -461,36 +295,33 @@ print(f"Average PSNR: {avg_psnr:.4f}")
 print(f"Average SSIM: {avg_ssim:.4f}")
 
 
-# In[ ]:
 
 
-from skimage.metrics import peak_signal_noise_ratio, structural_similarity
+# def evaluate_model(model, test_loader):
+#     model.eval()
+#     psnr_values = []
+#     ssim_values = []
 
-def evaluate_model(model, test_loader):
-    model.eval()
-    psnr_values = []
-    ssim_values = []
+#     with torch.no_grad():
+#         for inputs, targets in test_loader:
+#             inputs, targets = inputs.cuda(), targets.cuda()
+#             outputs = model(inputs)
 
-    with torch.no_grad():
-        for inputs, targets in test_loader:
-            inputs, targets = inputs.cuda(), targets.cuda()
-            outputs = model(inputs)
+#             for i in range(outputs.size(0)):
+#                 output_img = outputs[i].cpu().numpy().transpose(1, 2, 0)
+#                 target_img = targets[i].cpu().numpy().transpose(1, 2, 0)
 
-            for i in range(outputs.size(0)):
-                output_img = outputs[i].cpu().numpy().transpose(1, 2, 0)
-                target_img = targets[i].cpu().numpy().transpose(1, 2, 0)
+#                 psnr_value = peak_signal_noise_ratio(target_img, output_img)
+#                 ssim_value = structural_similarity(target_img, output_img, multichannel=True)
 
-                psnr_value = peak_signal_noise_ratio(target_img, output_img)
-                ssim_value = structural_similarity(target_img, output_img, multichannel=True)
+#                 psnr_values.append(psnr_value)
+#                 ssim_values.append(ssim_value)
 
-                psnr_values.append(psnr_value)
-                ssim_values.append(ssim_value)
+#     avg_psnr = np.mean(psnr_values)
+#     avg_ssim = np.mean(ssim_values)
 
-    avg_psnr = np.mean(psnr_values)
-    avg_ssim = np.mean(ssim_values)
+#     print(f'Average PSNR: {avg_psnr:.4f}, Average SSIM: {avg_ssim:.4f}')
 
-    print(f'Average PSNR: {avg_psnr:.4f}, Average SSIM: {avg_ssim:.4f}')
-
-# Evaluate the trained model
-evaluate_model(trained_model, test_loader)
+# # Evaluate the trained model
+# evaluate_model(trained_model, test_loader)
 
