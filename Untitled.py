@@ -112,8 +112,8 @@ transform = transforms.Compose([
 ])
 
 
-original_dir = '/ghosting-artifact-metric/m-gaid-dataset-high-frequency/original'
-denoised_dir = '/ghosting-artifact-metric/m-gaid-dataset-high-frequency/denoised'
+original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/original'
+denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
 csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
 
