@@ -1,8 +1,6 @@
-
-
 import os
 import cv2
-import torch
+# import torch
 import shutil
 import logging
 from glob import glob
