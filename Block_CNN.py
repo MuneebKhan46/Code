@@ -16,15 +16,18 @@ from sklearn.model_selection import train_test_split
 from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
 
+device = torch.device("cuda" if torch.cuda.is_available() else "CPU")
+
 IMAGE_SIZE = 224
 PATCH_SIZE = 224
 BATCH_SIZE = 32
-LEARNING_RATE = 0.001
+LEARNING_RATE = 1e-3
 weight_decay = 1e-4
 EPOCHS = 50
 COLOR_CHANNELS = 3
 RESULTS_DIR = '/ghosting-artifact-metric/Code/'
 CHECKPOINT_INTERVAL = 5 
+
 
 if not os.path.exists(RESULTS_DIR):
     os.makedirs(RESULTS_DIR)
@@ -217,7 +220,8 @@ class CNN_Net(nn.Module):
 
 model = CNN_Net()
 model = nn.DataParallel(model)
-model = model.cuda()
+# model = model.cuda()
+model = model.to(device)
 
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=weight_decay)
@@ -231,7 +235,7 @@ for epoch in range(EPOCHS):
     model.train()
     train_loss = 0.0
     for inputs, targets in train_loader:
-        inputs, targets = inputs.cuda(), targets.cuda()
+        inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = model(inputs)
         loss = criterion(outputs, targets)
@@ -246,7 +250,7 @@ for epoch in range(EPOCHS):
     val_loss = 0.0
     with torch.no_grad():
         for inputs, targets in val_loader:
-            inputs, targets = inputs.cuda(), targets.cuda()
+            inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             loss = criterion(outputs, targets)
             val_loss += loss.item()
@@ -276,10 +280,10 @@ psnr_scores, ssim_scores = [], []
 
 with torch.no_grad():
     for inputs, targets in test_loader:
-        inputs, targets = inputs.cuda(), targets.cuda()
+        inputs, targets = inputs.to(device), targets.to(device)
         outputs = model(inputs)
-        outputs = outputs.cpu().numpy()
-        targets = targets.cpu().numpy()
+        outputs = outputs.to(device).numpy()
+        targets = targets.to(device).numpy()
 
         for i in range(len(outputs)):
             psnr_scores.append(peak_signal_noise_ratio(targets[i], outputs[i]))
