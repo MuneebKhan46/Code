@@ -155,6 +155,7 @@ def sum_squared_error(y_true, y_pred):
 
 
 
+from tensorflow.keras.models import load_model
 
 model = tf.keras.models.load_model("/ghosting-artifact-metric/Code/DnCNN.keras")
 
