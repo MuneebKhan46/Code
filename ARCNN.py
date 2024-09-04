@@ -22,7 +22,7 @@ from torch.utils.data import Dataset, DataLoader
 from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similarity as ssim
 
 RESULTS_DIR = '/ghosting-artifact-metric/Code/'
-num_epochs = 20
+num_epochs = 2
 
 
 
