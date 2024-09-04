@@ -1,6 +1,6 @@
 import tensorflow as tf
 import os
-from PIL import image
+from PIL import Image
 import pandas as pd
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
