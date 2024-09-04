@@ -139,8 +139,8 @@ val_orig, test_orig, val_denoised, test_denoised = train_test_split(temp_orig, t
 #             batch_y = train_orig[batch_indices]
 #             yield batch_x, batch_y
 
-# def sum_squared_error(y_true, y_pred):
-#     return K.sum(K.square(y_pred - y_true)) / 2
+def sum_squared_error(y_true, y_pred):
+    return K.sum(K.square(y_pred - y_true)) / 2
 
 # with strategy.scope():
 #     model = DnCNN(depth=17, filters=64, image_channels=3, use_bnorm=True)
