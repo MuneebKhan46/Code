@@ -141,7 +141,7 @@ class DCTLayer(nn.Module):
 
     def forward(self, x):
         batch_size, channels, height, width = x.size()
-        assert height == IMAGE_SIZE and width == IMAGE_SIZE, 
+        assert height == IMAGE_SIZE and width == IMAGE_SIZE, "Input dimensions must match the defined IMAGE_SIZE"
 
         x_reshaped = x.view(batch_size * channels, height, width)
         dct_output = torch.matmul(self.dct_matrix, torch.matmul(x_reshaped, self.dct_matrix.t()))
