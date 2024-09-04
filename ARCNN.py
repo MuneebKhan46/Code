@@ -127,8 +127,8 @@ def evaluate(model, test_loader, device):
     return total_psnr / len(test_loader), total_ssim / len(test_loader)
 
 
-original_dir = '/ghosting-artifact-metric/dataset/dataset_patch_raw_ver3/original'
-denoised_dir = '/ghosting-artifact-metric/dataset/dataset_patch_raw_ver3/denoised'
+original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/original'
+denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
 csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
 
