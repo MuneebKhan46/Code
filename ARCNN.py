@@ -103,30 +103,6 @@ class ImageDataset(Dataset):
         return original_patch, denoised_patch
 
 
-
-# def calculate_metrics(output, target):
-#     output_np = output.detach().cpu().numpy().transpose(1, 2, 0)
-#     target_np = target.detach().cpu().numpy().transpose(1, 2, 0)
-
-#     psnr_value = psnr(target_np, output_np, data_range=1)
-#     ssim_value = ssim(target_np, output_np, multichannel=True)
-#     return psnr_value, ssim_value
-
-
-# def evaluate(model, test_loader, device):
-#     model.eval()
-#     total_psnr, total_ssim = 0, 0
-
-#     with torch.no_grad():
-#         for original, denoised in test_loader:
-#             original, denoised = original.to(device), denoised.to(device)
-#             output = model(denoised)
-#             psnr_value, ssim_value = calculate_metrics(output, original)
-#             total_psnr += psnr_value
-#             total_ssim += ssim_value
-#     return total_psnr / len(test_loader), total_ssim / len(test_loader)
-
-
 original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/original'
 denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
 csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
@@ -138,14 +114,11 @@ dataset = ImageDataset(csv_path, original_dir, denoised_dir, patch_size=224)
 train_data, temp_data = train_test_split(dataset, test_size=0.2, random_state=42)
 val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42)
 
-# train_loader = DataLoader(train_data, batch_size=4, shuffle=True, num_workers=4)
-
 train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
 test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
 
 
-# with strategy.scope():
 model = ARCNN()
 model = nn.DataParallel(model)
 model = model.to(device)
