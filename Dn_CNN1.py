@@ -15,7 +15,7 @@ from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
 
 model_name = 'DnCNN'
-batch_size = 128
+batch_size = 64
 epochs = 300
 initial_lr = 1e-3
 save_every = 1
