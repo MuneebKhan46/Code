@@ -132,7 +132,7 @@ original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/
 denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
 csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
 
 dataset = ImageDataset(csv_path, original_dir, denoised_dir, patch_size=224)
@@ -140,14 +140,17 @@ train_data, temp_data = train_test_split(dataset, test_size=0.2, random_state=42
 val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42)
 
 # train_loader = DataLoader(train_data, batch_size=4, shuffle=True, num_workers=4)
-train_loader = DataLoader(train_data, batch_size=4, shuffle=True)
-val_loader = DataLoader(val_data, batch_size=4, shuffle=False)
-test_loader = DataLoader(test_data, batch_size=1, shuffle=False)
+
+train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
+val_loader = DataLoader(val_data, batch_size=64, shuffle=False)
+test_loader = DataLoader(test_data, batch_size=64, shuffle=False)
+
 
 with strategy.scope():
     model = ARCNN().to(device)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
+    best_val_loss = float('inf')
 
 
 
