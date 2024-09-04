@@ -158,7 +158,7 @@ val_orig, test_orig, val_denoised, test_denoised = train_test_split(temp_orig, t
 
 keras.saving.load_model("/ghosting-artifact-metric/Code/DnCNN.keras")
 predictions = model.predict(test_denoised, batch_size=batch_size)
- psnr_values, ssim_values = [], []
+psnr_values, ssim_values = [], []
 
 for i in range(len(test_orig)):
 
