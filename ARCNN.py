@@ -22,6 +22,8 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similarity as ssim
 
+strategy = tf.distribute.MirroredStrategy()
+
 RESULTS_DIR = '/ghosting-artifact-metric/Code/'
 num_epochs = 2
 
@@ -143,9 +145,10 @@ train_loader = DataLoader(train_data, batch_size=16, shuffle=True, num_workers=4
 val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
 test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
 
-model = ARCNN().to(device)
-criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
+with strategy.scope():
+    model = ARCNN().to(device)
+    criterion = nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 
 
 
