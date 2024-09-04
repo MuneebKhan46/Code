@@ -164,23 +164,27 @@ ssim_values = []
 
 
 for i in range(len(test_orig)):
+    # Calculate PSNR
     psnr_value = psnr(test_orig[i], predictions[i])
+    
+    # Calculate SSIM, setting win_size and channel_axis
     patch_size = min(test_orig[i].shape[0], test_orig[i].shape[1])
     win_size = min(7, patch_size)  # SSIM window size max 7, but adjusts to smaller images
     
     if win_size >= 3:
-        # Calculate SSIM, setting win_size and channel_axis
-        ssim_value = ssim(test_orig[i], predictions[i], win_size=win_size, channel_axis=-1)
+        # Calculate SSIM, specifying win_size, channel_axis, and data_range=1.0 for normalized images
+        ssim_value = ssim(test_orig[i], predictions[i], win_size=win_size, channel_axis=-1, data_range=1.0)
         ssim_values.append(ssim_value)
     else:
         print(f"Skipping SSIM for image {i} due to insufficient size (patch size: {patch_size})")
     
-
+    # Append PSNR value
     psnr_values.append(psnr_value)
 
-
+# Calculate average PSNR and SSIM scores
 avg_psnr = np.mean(psnr_values)
 avg_ssim = np.mean(ssim_values) if ssim_values else 0  # Handle case when no SSIM scores are available
 
+# Print the results
 print(f"Average PSNR: {avg_psnr:.4f} dB")
 print(f"Average SSIM: {avg_ssim:.4f}")
