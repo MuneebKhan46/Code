@@ -129,7 +129,7 @@ def evaluate(model, test_loader, device):
 
 original_dir = '/ghosting-artifact-metric/dataset/dataset_patch_raw_ver3/original'
 denoised_dir = '/ghosting-artifact-metric/dataset/dataset_patch_raw_ver3/denoised'
-csv_path     = '/ghosting-artifact-metric/dataset/patch_label_median_verified3.csv'
+csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
