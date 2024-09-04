@@ -139,9 +139,10 @@ dataset = ImageDataset(csv_path, original_dir, denoised_dir, patch_size=224)
 train_data, temp_data = train_test_split(dataset, test_size=0.2, random_state=42)
 val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42)
 
-train_loader = DataLoader(train_data, batch_size=16, shuffle=True, num_workers=4)
-val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
-test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
+# train_loader = DataLoader(train_data, batch_size=4, shuffle=True, num_workers=4)
+train_loader = DataLoader(train_data, batch_size=4, shuffle=True)
+val_loader = DataLoader(val_data, batch_size=4, shuffle=False)
+test_loader = DataLoader(test_data, batch_size=1, shuffle=False)
 
 with strategy.scope():
     model = ARCNN().to(device)
