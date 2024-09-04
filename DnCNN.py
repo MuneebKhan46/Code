@@ -178,7 +178,7 @@ for i in range(len(test_orig)):
 
 
 avg_psnr = np.mean(psnr_values)
-avg_ssim = np.mean(ssim_values) if ssim_values else 0  # Handle case when no SSIM scores are available
+avg_ssim = np.mean(ssim_values) if ssim_values else 0
 
 print(f"Average PSNR: {avg_psnr:.4f} dB")
 print(f"Average SSIM: {avg_ssim:.4f}")
