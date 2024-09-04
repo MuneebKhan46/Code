@@ -72,7 +72,7 @@ def extract_patches_from_rgb_image(image_path: str, patch_size: int = 224):
         return [], []
 
     width, height = image.size
-    image_array = np.array(image)
+    image_array = np.array(image, dtype=np.float32) / 255.0
 
     for i in range(0, height, patch_size):
         for j in range(0, width, patch_size):
@@ -163,6 +163,6 @@ for i in range(len(test_orig)):
     psnr_values.append(psnr_value)
     ssim_values.append(ssim_value)
 
-
 print(f"Average PSNR: {np.mean(psnr_values)} dB")
 print(f"Average SSIM: {np.mean(ssim_values)}")
+
