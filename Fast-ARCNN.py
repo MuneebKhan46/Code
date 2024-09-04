@@ -132,15 +132,15 @@ for epoch in range(num_epochs):
     total_loss = 0
 
     for original, denoised in train_loader:
-    original, denoised = original.to(device), denoised.to(device)
-    output = model(denoised)
-    output = torch.nn.functional.interpolate(output, size=original.shape[2:], mode='bilinear', align_corners=False)
-    loss = criterion(output, original)
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
+        original, denoised = original.to(device), denoised.to(device)
+        output = model(denoised)
+        output = torch.nn.functional.interpolate(output, size=original.shape[2:], mode='bilinear', align_corners=False)
+        loss = criterion(output, original)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
-    total_loss += loss.item()
+        total_loss += loss.item()
 
     print(f"Epoch {epoch+1}/{num_epochs}, Training Loss: {total_loss / len(train_loader):.4f}")
   
