@@ -157,7 +157,8 @@ def sum_squared_error(y_true, y_pred):
 
 from tensorflow.keras.models import load_model
 
-model = tf.keras.models.load_model("/ghosting-artifact-metric/Code/DnCNN.keras")
+with tf.keras.utils.custom_object_scope({'sum_squared_error': sum_squared_error}):
+    model = tf.keras.models.load_model("/ghosting-artifact-metric/Code/DnCNN.keras")
 
 predictions = model.predict(test_denoised, batch_size=batch_size)
 psnr_values, ssim_values = [], []
