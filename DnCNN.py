@@ -14,15 +14,12 @@ from skimage.metrics import structural_similarity as ssim
 
 
 
-model_name = 'DnCNN'
 batch_size = 128
 epochs = 2
 initial_lr = 1e-3
 save_every = 1
 patch_size = 224
-
 strategy = tf.distribute.MirroredStrategy()
-print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
 
 def DnCNN(depth, filters=64, image_channels=3, use_bnorm=True):
@@ -135,7 +132,7 @@ def sum_squared_error(y_true, y_pred):
 with strategy.scope():
     model = DnCNN(depth=17, filters=64, image_channels=3, use_bnorm=True)
     model.compile(optimizer=Adam(0.001), loss=sum_squared_error)
-    model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Code/DNN_CNN.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1)
+    model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Code/DnCNN.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1)
     lr_scheduler = LearningRateScheduler(lr_schedule)
 
 
@@ -149,42 +146,25 @@ history = model.fit( data_generator(train_orig, train_denoised, batch_size=batch
 
 predictions = model.predict(test_denoised, batch_size=batch_size)
 
-psnr_values = []
-ssim_values = []
-
-# for i in range(len(test_orig)):
-#     psnr_value = psnr(test_orig[i], predictions[i])
-#     ssim_value = ssim(test_orig[i], predictions[i], multichannel=True)
-    
-#     psnr_values.append(psnr_value)
-#     ssim_values.append(ssim_value)
-
-# print(f"Average PSNR: {np.mean(psnr_values)} dB")
-# print(f"Average SSIM: {np.mean(ssim_values)}")
-
 
 for i in range(len(test_orig)):
-    # Calculate PSNR
+
     psnr_value = psnr(test_orig[i], predictions[i])
     
-    # Calculate SSIM, setting win_size and channel_axis
     patch_size = min(test_orig[i].shape[0], test_orig[i].shape[1])
-    win_size = min(7, patch_size)  # SSIM window size max 7, but adjusts to smaller images
+    win_size = min(7, patch_size)
     
     if win_size >= 3:
-        # Calculate SSIM, specifying win_size, channel_axis, and data_range=1.0 for normalized images
         ssim_value = ssim(test_orig[i], predictions[i], win_size=win_size, channel_axis=-1, data_range=1.0)
         ssim_values.append(ssim_value)
     else:
         print(f"Skipping SSIM for image {i} due to insufficient size (patch size: {patch_size})")
     
-    # Append PSNR value
     psnr_values.append(psnr_value)
 
-# Calculate average PSNR and SSIM scores
+
 avg_psnr = np.mean(psnr_values)
 avg_ssim = np.mean(ssim_values) if ssim_values else 0  # Handle case when no SSIM scores are available
 
-# Print the results
 print(f"Average PSNR: {avg_psnr:.4f} dB")
 print(f"Average SSIM: {avg_ssim:.4f}")
