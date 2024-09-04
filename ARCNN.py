@@ -131,7 +131,6 @@ original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/
 denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
 csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
 
