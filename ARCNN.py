@@ -141,13 +141,16 @@ val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42
 
 # train_loader = DataLoader(train_data, batch_size=4, shuffle=True, num_workers=4)
 
-train_loader = DataLoader(train_data, batch_size=512, shuffle=True)
-val_loader = DataLoader(val_data, batch_size=512, shuffle=False)
-test_loader = DataLoader(test_data, batch_size=32, shuffle=False)
+train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
+val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
+test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
 
 
 # with strategy.scope():
-model = ARCNN().to(device)
+model = ARCNN()
+model = nn.DataParallel(model)
+model = model.to(device)
+
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 best_val_loss = float('inf')
