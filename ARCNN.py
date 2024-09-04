@@ -141,9 +141,9 @@ val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42
 
 # train_loader = DataLoader(train_data, batch_size=4, shuffle=True, num_workers=4)
 
-train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
-val_loader = DataLoader(val_data, batch_size=64, shuffle=False)
-test_loader = DataLoader(test_data, batch_size=64, shuffle=False)
+train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
+val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
+test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
 
 
 with strategy.scope():
