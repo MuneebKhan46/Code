@@ -166,7 +166,7 @@ for epoch in range(num_epochs):
 
 model.eval()
 
-psnr_scores, ssim_scores = []
+psnr_scores, ssim_scores = [], []
 
 with torch.no_grad():
     for inputs, targets in test_loader:
