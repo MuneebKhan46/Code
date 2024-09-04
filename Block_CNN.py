@@ -1,3 +1,15 @@
+# =============================================================================
+#  @article{zhang2017beyond,
+#    title={BlockCNN: A Deep Network for Artifact Removal and Image Compression},
+#    author={Danial Maleki, Soheila Nadalian, Mohammad Mahdi Derakhshani, Mohammad Amin Sadeghi},
+#    journal={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) Workshops},
+#    year={2018}, 
+#    pages={2555-2558}, 
+#  }
+# =============================================================================
+
+
+
 import os
 import cv2
 import torch
