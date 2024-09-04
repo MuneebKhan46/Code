@@ -20,7 +20,6 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similarity as ssim
 
-# strategy = tf.distribute.MirroredStrategy()
 
 RESULTS_DIR = '/ghosting-artifact-metric/Code/'
 num_epochs = 20
