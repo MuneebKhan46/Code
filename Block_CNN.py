@@ -75,12 +75,12 @@ def extract_patches_from_rgb_image(image_path: str, patch_size: int = 224):
     
     if not os.path.exists(image_path):
         print(f"Warning: File {image_path} does not exist.")
-        return [], []
+        return []
 
     image = Image.open(image_path)
     if image.mode != 'RGB':
         print(f"Warning: Expected an RGB image, got {image.mode}.")
-        return [], []
+        return []
 
     width, height = image.size
     image_array = np.array(image)
