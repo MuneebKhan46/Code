@@ -176,6 +176,7 @@ class DMCNN(nn.Module):
     def __init__(self):
         super(DMCNN, self).__init__()
 
+        # DCT layers
         self.dct_layers = nn.Sequential(
             DCTLayer(),
             nn.Conv2d(3, 64, kernel_size=3, padding=1),
@@ -186,9 +187,13 @@ class DMCNN(nn.Module):
             nn.PReLU(init=0.1),
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
             nn.PReLU(init=0.1),
-            nn.Conv2d(64, 64, kernel_size=3, padding=1)
+            nn.Conv2d(64, 64, kernel_size=3, padding=1),
+            nn.PReLU(init=0.1),
+            # Final conv layer to reduce channels from 64 to 3
+            nn.Conv2d(64, 3, kernel_size=3, padding=1)
         )
 
+        # Pixel layers
         self.pixel_layers = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, padding=1),
             nn.PReLU(init=0.1),
@@ -205,19 +210,24 @@ class DMCNN(nn.Module):
             nn.Conv2d(64, 3, kernel_size=3, padding=1)
         )
 
+        # Residual weight parameter
         self.residual_weight = nn.Parameter(torch.FloatTensor([0.5]))
 
     def forward(self, x):
+        # Apply DCT layers
         print(f"Input to DCT: {x.shape}")
         dct_output = self.dct_layers(x)
         print(f"Output from DCT: {dct_output.shape}")
 
+        # Apply pixel layers
         print(f"Input to Pixel Layers: {x.shape}")
         pixel_output = self.pixel_layers(x)
         print(f"Output from Pixel Layers: {pixel_output.shape}")
 
+        # Combine DCT and Pixel outputs
         output = self.residual_weight * dct_output + (1 - self.residual_weight) * pixel_output
         return output
+
 
 
 model = DMCNN()
