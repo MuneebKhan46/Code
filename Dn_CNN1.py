@@ -135,7 +135,7 @@ def sum_squared_error(y_true, y_pred):
 with strategy.scope():
     model = DnCNN(depth=17, filters=64, image_channels=3, use_bnorm=True)
     model.compile(optimizer=Adam(0.001), loss=sum_squared_error)
-    model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Code/DNN_CNN.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1)
+    model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Code/DNN_CNN.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1)
     lr_scheduler = LearningRateScheduler(lr_schedule)
 
 
