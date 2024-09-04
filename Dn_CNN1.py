@@ -21,6 +21,9 @@ initial_lr = 1e-3
 save_every = 1
 patch_size = 224
 
+strategy = tf.distribute.MirroredStrategy()
+print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+
 
 def DnCNN(depth, filters=64, image_channels=3, use_bnorm=True):
     layer_count = 0
@@ -133,23 +136,21 @@ def data_generator(original_patches, denoised_patches, batch_size):
 def sum_squared_error(y_true, y_pred):
     return K.sum(K.square(y_pred - y_true)) / 2
 
-model = DnCNN(depth=17, filters=64, image_channels=3, use_bnorm=True)
-model.summary()
+with strategy.scope():
+    model = DnCNN(depth=17, filters=64, image_channels=3, use_bnorm=True)
+    model.compile(optimizer=Adam(0.001), loss=sum_squared_error)
+    model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/Code/DNN_CNN.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1)
+    lr_scheduler = LearningRateScheduler(lr_schedule)
 
-model.compile(optimizer=Adam(0.001), loss=sum_squared_error)
 
-model_checkpoint = keras.callbacks.ModelCheckpoint(filepath='/ghosting-artifact-metric/Code/DNN_CNN.keras', save_best_only=True, monitor='val_accuracy', mode='max', verbose=1 )
-lr_scheduler = LearningRateScheduler(lr_schedule)
 
-history = model.fit(
-    data_generator(train_orig, train_denoised, batch_size=batch_size),
-    steps_per_epoch=len(train_orig) // batch_size,
-    epochs=epochs,
-    verbose=1,
-    validation_data=data_generator(val_orig, val_denoised, batch_size=batch_size),
-    validation_steps=len(val_orig) // batch_size,
-    callbacks=[lr_scheduler, model_checkpoint]
-)
+history = model.fit( data_generator(train_orig, train_denoised, batch_size=batch_size), steps_per_epoch=len(train_orig) // batch_size, epochs=epochs,
+                    verbose=1, validation_data=data_generator(val_orig, val_denoised, batch_size=batch_size), validation_steps=len(val_orig) // batch_size,
+                    callbacks=[lr_scheduler, model_checkpoint])
+
+
+
+
 
 predictions = model.predict(test_denoised, batch_size=batch_size)
 
