@@ -16,7 +16,7 @@ from skimage.metrics import structural_similarity as ssim
 
 model_name = 'DnCNN'
 batch_size = 128
-epochs = 300
+epochs = 3
 initial_lr = 1e-3
 save_every = 1
 patch_size = 224
@@ -114,23 +114,19 @@ csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.c
 
 original_patches, denoised_patches = load_data_from_csv(csv_path, original_dir, denoised_dir)
 
-train_orig, temp_orig, train_denoised, temp_denoised = train_test_split(
-    original_patches, denoised_patches, test_size=0.2, random_state=42
-)
+train_orig, temp_orig, train_denoised, temp_denoised = train_test_split(original_patches, denoised_patches, test_size=0.2, random_state=42)
 
-val_orig, test_orig, val_denoised, test_denoised = train_test_split(
-    temp_orig, temp_denoised, test_size=0.5, random_state=42
-)
+val_orig, test_orig, val_denoised, test_denoised = train_test_split(temp_orig, temp_denoised, test_size=0.5, random_state=42)
 
-def data_generator(original_patches, denoised_patches, batch_size):
-    num_patches = len(original_patches)
+def data_generator(train_orig, train_denoised, batch_size):
+    num_patches = len(train_orig)
     while True:
         indices = np.arange(num_patches)
         np.random.shuffle(indices)
         for i in range(0, num_patches, batch_size):
             batch_indices = indices[i:i+batch_size]
-            batch_x = denoised_patches[batch_indices]
-            batch_y = original_patches[batch_indices]
+            batch_x = train_denoised[batch_indices]
+            batch_y = train_orig[batch_indices]
             yield batch_x, batch_y
 
 def sum_squared_error(y_true, y_pred):
@@ -144,9 +140,8 @@ with strategy.scope():
 
 
 
-history = model.fit( data_generator(train_orig, train_denoised, batch_size=batch_size), steps_per_epoch=len(train_orig) // batch_size, epochs=epochs,
-                    verbose=1, validation_data=data_generator(val_orig, val_denoised, batch_size=batch_size), validation_steps=len(val_orig) // batch_size,
-                    callbacks=[lr_scheduler, model_checkpoint])
+history = model.fit( data_generator(train_orig, train_denoised, batch_size=batch_size), steps_per_epoch=len(train_orig) // batch_size, epochs=epochs, verbose=1, validation_data=data_generator(val_orig, val_denoised, batch_size=batch_size), 
+                    validation_steps=len(val_orig) // batch_size, callbacks=[lr_scheduler, model_checkpoint])
 
 
 
