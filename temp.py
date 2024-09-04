@@ -214,13 +214,13 @@ class DMCNN(nn.Module):
         self.residual_weight = nn.Parameter(torch.FloatTensor([0.5]))
 
     def forward(self, x):
-        print(f"Input to DCT: {x.shape}")
+        # print(f"Input to DCT: {x.shape}")
         dct_output = self.dct_layers(x)
-        print(f"Output from DCT: {dct_output.shape}")
+        # print(f"Output from DCT: {dct_output.shape}")
 
-        print(f"Input to Pixel Layers: {x.shape}")
+        # print(f"Input to Pixel Layers: {x.shape}")
         pixel_output = self.pixel_layers(x)
-        print(f"Output from Pixel Layers: {pixel_output.shape}")
+        # print(f"Output from Pixel Layers: {pixel_output.shape}")
 
         output = self.residual_weight * dct_output + (1 - self.residual_weight) * pixel_output
         return output
