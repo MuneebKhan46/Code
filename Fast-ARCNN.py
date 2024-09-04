@@ -143,13 +143,15 @@ for epoch in range(num_epochs):
         total_loss += loss.item()
 
     print(f"Epoch {epoch+1}/{num_epochs}, Training Loss: {total_loss / len(train_loader):.4f}")
-  
+
     model.eval()
     val_loss = 0.0
     with torch.no_grad():
         for inputs, targets in val_loader:
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
+            
+            outputs = torch.nn.functional.interpolate(outputs, size=targets.shape[2:], mode='bilinear', align_corners=False)
             loss = criterion(outputs, targets)
             val_loss += loss.item()
 
@@ -164,12 +166,15 @@ for epoch in range(num_epochs):
 
 model.eval()
 
-psnr_scores, ssim_scores = [], []
+psnr_scores, ssim_scores = []
 
 with torch.no_grad():
     for inputs, targets in test_loader:
         inputs, targets = inputs.to(device), targets.to(device)
         outputs = model(inputs)
+
+        outputs = torch.nn.functional.interpolate(outputs, size=targets.shape[2:], mode='bilinear', align_corners=False)
+
         outputs = outputs.cpu().numpy()
         targets = targets.cpu().numpy()
 
@@ -177,8 +182,8 @@ with torch.no_grad():
             psnr_scores.append(psnr(targets[i], outputs[i]))
             
             patch_size = min(outputs[i].shape[0], outputs[i].shape[1])
-            win_size = min(7, patch_size) 
-            
+            win_size = min(7, patch_size)
+
             if win_size >= 3:
                 ssim_val = ssim(targets[i], outputs[i], win_size=win_size, channel_axis=-1, data_range=1.0)
                 ssim_scores.append(ssim_val)
