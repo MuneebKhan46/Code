@@ -132,7 +132,7 @@ original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/
 denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
 csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
 
 dataset = ImageDataset(csv_path, original_dir, denoised_dir, patch_size=224)
@@ -187,12 +187,6 @@ for epoch in range(num_epochs):
         early_stopping_counter = 0
         torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'Best_ARCNN_Model.pth'))
         print(f"New best model saved with validation loss: {val_loss:.4f}")
-    else:
-        early_stopping_counter += 1
-
-    if early_stopping_counter >= early_stopping_patience:
-        print("Early stopping triggered.")
-        break
 
 
 
