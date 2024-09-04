@@ -15,7 +15,7 @@ from skimage.metrics import structural_similarity as ssim
 
 
 batch_size = 128
-epochs = 2
+epochs = 300
 initial_lr = 1e-3
 save_every = 1
 patch_size = 224
