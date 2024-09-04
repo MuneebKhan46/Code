@@ -128,16 +128,16 @@ train_orig, temp_orig, train_denoised, temp_denoised = train_test_split(original
 
 val_orig, test_orig, val_denoised, test_denoised = train_test_split(temp_orig, temp_denoised, test_size=0.5, random_state=42)
 
-# def data_generator(train_orig, train_denoised, batch_size):
-#     num_patches = len(train_orig)
-#     while True:
-#         indices = np.arange(num_patches)
-#         np.random.shuffle(indices)
-#         for i in range(0, num_patches, batch_size):
-#             batch_indices = indices[i:i+batch_size]
-#             batch_x = train_denoised[batch_indices]
-#             batch_y = train_orig[batch_indices]
-#             yield batch_x, batch_y
+def data_generator(train_orig, train_denoised, batch_size):
+    num_patches = len(train_orig)
+    while True:
+        indices = np.arange(num_patches)
+        np.random.shuffle(indices)
+        for i in range(0, num_patches, batch_size):
+            batch_indices = indices[i:i+batch_size]
+            batch_x = train_denoised[batch_indices]
+            batch_y = train_orig[batch_indices]
+            yield batch_x, batch_y
 
 def sum_squared_error(y_true, y_pred):
     return K.sum(K.square(y_pred - y_true)) / 2
