@@ -23,7 +23,7 @@ from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similari
 # strategy = tf.distribute.MirroredStrategy()
 
 RESULTS_DIR = '/ghosting-artifact-metric/Code/'
-num_epochs = 2
+num_epochs = 20
 
 
 
@@ -141,8 +141,8 @@ val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42
 
 # train_loader = DataLoader(train_data, batch_size=4, shuffle=True, num_workers=4)
 
-train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
-val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
+train_loader = DataLoader(train_data, batch_size=32, shuffle=True)
+val_loader = DataLoader(val_data, batch_size=32, shuffle=False)
 test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
 
 
@@ -190,7 +190,6 @@ for epoch in range(num_epochs):
 
 
 
-# model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'Best_ARCNN_Model.pth')))
 model.eval()
 
 psnr_scores, ssim_scores = [], []
