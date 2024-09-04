@@ -9,8 +9,6 @@
 
 
 
-
-
 import os
 import numpy as np
 import pandas as pd
@@ -25,11 +23,9 @@ RESULTS_DIR = '/ghosting-artifact-metric/Code/'
 num_epochs = 20
 
 
-
 class FastARCNN(nn.Module):
     def __init__(self):
         super(FastARCNN, self).__init__()
-        # Base layer uses stride for downsampling
         self.base = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=9, stride=2, padding=4),
             nn.PReLU(),
@@ -103,34 +99,9 @@ class ImageDataset(Dataset):
         return original_patch, denoised_patch
 
 
-
-def calculate_metrics(output, target):
-    output_np = output.detach().cpu().numpy().transpose(1, 2, 0)
-    target_np = target.detach().cpu().numpy().transpose(1, 2, 0)
-
-    psnr_value = psnr(target_np, output_np, data_range=1)
-    ssim_value = ssim(target_np, output_np, multichannel=True)
-    return psnr_value, ssim_value
-
-
-def evaluate(model, test_loader, device):
-    model.eval()
-    total_psnr, total_ssim = 0, 0
-
-    with torch.no_grad():
-        for original, denoised in test_loader:
-            original, denoised = original.to(device), denoised.to(device)
-            output = model(denoised)
-            psnr_value, ssim_value = calculate_metrics(output, original)
-            total_psnr += psnr_value
-            total_ssim += ssim_value
-    return total_psnr / len(test_loader), total_ssim / len(test_loader)
-
-
-original_dir = '/ghosting-artifact-metric/dataset/dataset_patch_raw_ver3/original'
-denoised_dir = '/ghosting-artifact-metric/dataset/dataset_patch_raw_ver3/denoised'
-csv_path     = '/ghosting-artifact-metric/dataset/patch_label_median_verified3.csv'
-
+original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/original'
+denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
+csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
@@ -139,13 +110,18 @@ dataset = ImageDataset(csv_path, original_dir, denoised_dir, patch_size=224)
 train_data, temp_data = train_test_split(dataset, test_size=0.2, random_state=42)
 val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42)
 
-train_loader = DataLoader(train_data, batch_size=16, shuffle=True, num_workers=4)
+
+train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
 test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
 
-model = ARCNN().to(device)
+model =  FastARCNN()
+model = nn.DataParallel(model)
+model = model.to(device)
+
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
+best_val_loss = float('inf')
 
 
 
@@ -182,16 +158,7 @@ for epoch in range(num_epochs):
         early_stopping_counter = 0
         torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'Best_FastARCNN_Model.pth'))
         print(f"New best model saved with validation loss: {val_loss:.4f}")
-    else:
-        early_stopping_counter += 1
 
-    if early_stopping_counter >= early_stopping_patience:
-        print("Early stopping triggered.")
-        break
-
-
-
-model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'Best_FastARCNN_Model.pth')))
 model.eval()
 
 psnr_scores, ssim_scores = [], []
@@ -219,4 +186,4 @@ avg_psnr = np.mean(psnr_scores)
 avg_ssim = np.mean(ssim_scores) if ssim_scores else 0
 
 print(f"Average PSNR: {avg_psnr:.4f}")
-print(f"Average SSIM: {avg_ssim:.4f}")    
+print(f"Average SSIM: {avg_ssim:.4f}")
