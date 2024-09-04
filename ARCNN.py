@@ -104,27 +104,27 @@ class ImageDataset(Dataset):
 
 
 
-def calculate_metrics(output, target):
-    output_np = output.detach().cpu().numpy().transpose(1, 2, 0)
-    target_np = target.detach().cpu().numpy().transpose(1, 2, 0)
+# def calculate_metrics(output, target):
+#     output_np = output.detach().cpu().numpy().transpose(1, 2, 0)
+#     target_np = target.detach().cpu().numpy().transpose(1, 2, 0)
 
-    psnr_value = psnr(target_np, output_np, data_range=1)
-    ssim_value = ssim(target_np, output_np, multichannel=True)
-    return psnr_value, ssim_value
+#     psnr_value = psnr(target_np, output_np, data_range=1)
+#     ssim_value = ssim(target_np, output_np, multichannel=True)
+#     return psnr_value, ssim_value
 
 
-def evaluate(model, test_loader, device):
-    model.eval()
-    total_psnr, total_ssim = 0, 0
+# def evaluate(model, test_loader, device):
+#     model.eval()
+#     total_psnr, total_ssim = 0, 0
 
-    with torch.no_grad():
-        for original, denoised in test_loader:
-            original, denoised = original.to(device), denoised.to(device)
-            output = model(denoised)
-            psnr_value, ssim_value = calculate_metrics(output, original)
-            total_psnr += psnr_value
-            total_ssim += ssim_value
-    return total_psnr / len(test_loader), total_ssim / len(test_loader)
+#     with torch.no_grad():
+#         for original, denoised in test_loader:
+#             original, denoised = original.to(device), denoised.to(device)
+#             output = model(denoised)
+#             psnr_value, ssim_value = calculate_metrics(output, original)
+#             total_psnr += psnr_value
+#             total_ssim += ssim_value
+#     return total_psnr / len(test_loader), total_ssim / len(test_loader)
 
 
 original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/original'
