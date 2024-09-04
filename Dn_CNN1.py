@@ -154,11 +154,11 @@ ssim_values = []
 
 for i in range(len(test_orig)):
     psnr_value = psnr(test_orig[i], predictions[i])
-    ssim_value = ssim(test_orig[i], predictions[i], multichannel=True)
+    # ssim_value = ssim(test_orig[i], predictions[i], multichannel=True)
     
     psnr_values.append(psnr_value)
-    ssim_values.append(ssim_value)
+    # ssim_values.append(ssim_value)
 
 print(f"Average PSNR: {np.mean(psnr_values)} dB")
-print(f"Average SSIM: {np.mean(ssim_values)}")
+# print(f"Average SSIM: {np.mean(ssim_values)}")
 
