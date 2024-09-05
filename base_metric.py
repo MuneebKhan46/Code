@@ -78,17 +78,17 @@ test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
 psnr_scores, ssim_scores = [], []
 
 with torch.no_grad():
-  for inputs, targets in test_loader:
-      inputs, targets = inputs.to(device), targets.to(device)
-      inputs = inputs.cpu().numpy()
-      targets = targets.cpu().numpy()
+  for original, denoised in test_loader:
+      original, denoised = original.to(device), targets.to(device)
+      original = original.cpu().numpy()
+      denoised = denoised.cpu().numpy()
       
-      for i in range(len(inputs)):
-          psnr_scores.append(psnr(targets[i], inputs[i]))
-          patch_size = min(inputs[i].shape[0], inputs[i].shape[1])
+      for i in range(len(original)):
+          psnr_scores.append(psnr(original[i], denoised[i]))
+          patch_size = min(denoised[i].shape[0], denoised[i].shape[1])
           win_size = min(7, patch_size)
           if win_size >= 3:
-              ssim_val = ssim(targets[i], inputs[i], win_size=win_size, channel_axis=-1, data_range=1.0)
+              ssim_val = ssim(original[i], denoised[i], win_size=win_size, channel_axis=-1, data_range=1.0)
               ssim_scores.append(ssim_val)
           else:
               print(f"Skipping SSIM for patch {i} due to insufficient size")
