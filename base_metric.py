@@ -72,7 +72,7 @@ val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42
 
 train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
-test_loader = DataLoader(test_data, shuffle=False)
+test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
 
 print(len(train_loader))
 print(len(val_loader))
@@ -88,7 +88,7 @@ with torch.no_grad():
       
       print(len(inputs))
       for i in range(len(inputs)):
-          psnr_scores.append(psnr(targets[i], inputs[I]))
+          psnr_scores.append(psnr(targets[i], inputs[i]))
           patch_size = min(inputs[i].shape[0], inputs[i].shape[1])
           win_size = min(7, patch_size)
           if win_size >= 3:
