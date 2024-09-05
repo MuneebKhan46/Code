@@ -148,7 +148,7 @@ for epoch in range(num_epochs):
     model.eval()
     val_loss = 0.0
     with torch.no_grad():
-        for inputs, targets in val_loader:
+        for targets, inputs in val_loader:
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             loss = criterion(outputs, targets)
@@ -160,17 +160,17 @@ for epoch in range(num_epochs):
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         early_stopping_counter = 0
-        torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'Best_ARCNN_Model.pth'))
+        torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'Best_ARCNN_Model2.pth'))
         print(f"New best model saved with validation loss: {val_loss:.4f}")
 
 
-
+model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'Best_ARCNN_Model2.pth')))
 model.eval()
 
 psnr_scores, ssim_scores = [], []
 
 with torch.no_grad():
-    for inputs, targets in test_loader:
+    for targets, inputs in test_loader:
         inputs, targets = inputs.to(device), targets.to(device)
         outputs = model(inputs)
         outputs = outputs.cpu().numpy()
