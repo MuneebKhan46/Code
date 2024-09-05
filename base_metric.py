@@ -72,14 +72,14 @@ val_data, test_data = train_test_split(temp_data, test_size=0.5, random_state=42
 
 train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
-test_loader = DataLoader(test_data, batch_size=16, shuffle=False)
+test_loader = DataLoader(test_data, batch_size=64, shuffle=False)
 
 
 psnr_scores, ssim_scores = [], []
 
 with torch.no_grad():
   for original, denoised in test_loader:
-      original, denoised = original.to(device), targets.to(device)
+      original, denoised = original.to(device), denoised.to(device)
       original = original.cpu().numpy()
       denoised = denoised.cpu().numpy()
       
