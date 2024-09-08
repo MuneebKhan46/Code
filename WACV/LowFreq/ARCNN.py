@@ -22,7 +22,7 @@ from sklearn.model_selection import train_test_split
 from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similarity as ssim
 
 
-Results_dir = '/ghosting-artifact-metric/wacv'
+Results_dir = '/ghosting-artifact-metric/WACV/LowFreq/'
 
 num_epochs = 20
 
