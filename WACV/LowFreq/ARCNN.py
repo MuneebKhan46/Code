@@ -221,7 +221,7 @@ def visualize_and_save_patches(original, denoised, restored, idx):
 psnr_scores, ssim_scores = [], []
 results = []
 
-image_save_dir = os.path.join(Results_dir, 'images/lowfreq/')
+image_save_dir = os.path.join(Results_dir, 'images/AR-CNN/')
 os.makedirs(image_save_dir, exist_ok=True)
 
 visualized_images = 0
