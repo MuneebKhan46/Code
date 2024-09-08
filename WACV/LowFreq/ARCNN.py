@@ -24,7 +24,7 @@ from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similari
 
 Results_dir = '/ghosting-artifact-metric/WACV/LowFreq/'
 
-num_epochs = 20
+num_epochs = 1
 
 
 class ARCNN(nn.Module):
