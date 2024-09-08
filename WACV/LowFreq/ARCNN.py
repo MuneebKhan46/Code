@@ -176,13 +176,13 @@ for epoch in range(num_epochs):
   
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), os.path.join(Results_dir, '=/model/LowFreq_ARCNN_Model.pth'))
+        torch.save(model.state_dict(), os.path.join(Results_dir, 'model/LowFreq_ARCNN_Model.pth'))
         print(f"New best model saved with validation loss: {val_loss:.4f}")
 
 
 
 
-model.load_state_dict(torch.load(os.path.join(Results_dir, '/model/LowFreq_ARCNN_Model.pth')))
+model.load_state_dict(torch.load(os.path.join(Results_dir, 'model/LowFreq_ARCNN_Model.pth')))
 model.eval()
 
 def save_image(image_tensor, filename):
