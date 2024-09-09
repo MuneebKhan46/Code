@@ -27,7 +27,7 @@ Results_dir = '/ghosting-artifact-metric/WACV/Result'
 if not os.path.exists(Results_dir):
     os.makedirs(Results_dir)
 
-model_dir = = '/ghosting-artifact-metric/WACV/Model'
+model_dir = '/ghosting-artifact-metric/WACV/Model'
 
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
