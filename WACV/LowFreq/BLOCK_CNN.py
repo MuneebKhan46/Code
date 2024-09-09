@@ -342,7 +342,7 @@ def visualize_and_save_patches(original, denoised, restored, idx):
 
 
 psnr_scores, ssim_scores = [], []
-
+results = []
 image_save_dir = os.path.join(Results_dir, 'images/BlockCNN/')
 os.makedirs(image_save_dir, exist_ok=True)
 
