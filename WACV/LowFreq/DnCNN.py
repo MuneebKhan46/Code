@@ -122,9 +122,9 @@ def load_data_from_csv(csv_path, original_dir, denoised_dir):
 
     return np.array(all_original_patches), np.array(all_denoised_patches)
 
-original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/original'
-denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
-csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
+original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-low-frequency/original'
+denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-low-frequency/denoised'
+csv_path = '/ghosting-artifact-metric/Code/WACV/LowFreq/Low_frequency_classification_label.csv'
 
 
 original_patches, denoised_patches = load_data_from_csv(csv_path, original_dir, denoised_dir)
@@ -201,6 +201,12 @@ predictions = model.predict(test_denoised, batch_size=batch_size)
 
 psnr_values, ssim_values = [], []
 results = []
+
+image_save_dir = os.path.join(Results_dir, 'images/DnCNN_Low/')
+os.makedirs(image_save_dir, exist_ok=True)
+
+visualized_images = 0
+visualize_limit = 2
 
 for i in range(len(test_orig)):
 
