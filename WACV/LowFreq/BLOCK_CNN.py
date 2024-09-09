@@ -265,11 +265,14 @@ epochs_no_improve = 0
 for epoch in range(EPOCHS):
     model.train()
     train_loss = 0.0
-    for inputs, targets in train_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
+    for original, denoised in train_loader:
+        original, denoised = original.to(device), denoised.to(device)
         optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
+        
+        outputs = model(denoised)
+        
+        loss = criterion(outputs, original)
+        
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
@@ -280,10 +283,12 @@ for epoch in range(EPOCHS):
     model.eval()
     val_loss = 0.0
     with torch.no_grad():
-        for inputs, targets in val_loader:
-            inputs, targets = inputs.to(device), targets.to(device)
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
+        for original_val, denoised_val in val_loader:
+            original_val, denoised_val = original_val.to(device), denoised_val.to(device)
+            
+            outputs_val = model(denoised_val)
+            
+            loss = criterion(outputs_val, original_val)
             val_loss += loss.item()
 
     val_loss /= len(val_loader)
@@ -307,26 +312,65 @@ for epoch in range(EPOCHS):
 model.load_state_dict(torch.load(os.path.join(model_dir, 'LowFreq_BlockCNN_Model.pth')))
 model.eval()
 
+
+def visualize_and_save_patches(original, denoised, restored, idx):
+    if isinstance(original, np.ndarray):
+        original = torch.tensor(original)
+    if isinstance(denoised, np.ndarray):
+        denoised = torch.tensor(denoised)
+    if isinstance(restored, np.ndarray):
+        restored = torch.tensor(restored)
+    
+    original_file = os.path.join(image_save_dir, f"BlockCNN_original_patch_{idx}.png")
+    denoised_file = os.path.join(image_save_dir, f"BlockCNN_denoised_patch_{idx}.png")
+    restored_file = os.path.join(image_save_dir, f"BlockCNN_restored_patch_{idx}.png")
+    
+    save_image(original, original_file)
+    save_image(denoised, denoised_file)
+    save_image(restored, restored_file)
+
+    # fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+    # axs[0].imshow(original.permute(1, 2, 0).cpu().numpy())
+    # axs[0].set_title("Original Image")
+    # axs[1].imshow(denoised.permute(1, 2, 0).cpu().numpy())
+    # axs[1].set_title("Denoised Image")
+    # axs[2].imshow(restored.permute(1, 2, 0).cpu().numpy())
+    # axs[2].set_title("ARCNN")
+    # for ax in axs:
+    #     ax.axis('off')
+    # plt.show()
+
+
 psnr_scores, ssim_scores = [], []
 
-with torch.no_grad():
-    for inputs, targets in test_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        outputs = model(inputs)
-        outputs = outputs.cpu().numpy()
-        targets = targets.cpu().numpy()
+image_save_dir = os.path.join(Results_dir, 'images/BlockCNN/')
+os.makedirs(image_save_dir, exist_ok=True)
 
-        for i in range(len(outputs)):
-            psnr_scores.append(psnr(targets[i], outputs[i]))
+visualized_images = 0
+visualize_limit = 2
+
+with torch.no_grad():
+    for original_test, denoised_test in test_loader:
+        original_test, denoised_test = original_test.to(device), denoised_test.to(device)
+        outputs_test = model(denoised_test)
+        
+        outputs_test = outputs_test.cpu().numpy()
+        original_test = original_test.cpu().numpy()
+
+        for i in range(len(outputs_test)):
+            psnr_scores.append(psnr(original_test[i], outputs_test[i]))
+            patch_size = min(outputs_test[i].shape[0], outputs_test[i].shape[1])
             
-            patch_size = min(outputs[i].shape[0], outputs[i].shape[1])
             win_size = min(7, patch_size) 
-            
             if win_size >= 3:
-                ssim_val = ssim(targets[i], outputs[i], win_size=win_size, channel_axis=-1, data_range=1.0)
+                ssim_val = ssim(original_test[i], outputs_test[i], win_size=win_size, channel_axis=-1, data_range=1.0)
                 ssim_scores.append(ssim_val)
             else:
                 print(f"Skipping SSIM for patch {i} due to insufficient size")
+
+            if visualized_images < visualize_limit:
+                visualize_and_save_patches(original_test[i], denoised_test[i], outputs_test[i], visualized_images)
+                visualized_images += 1
 
 
 
