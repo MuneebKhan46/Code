@@ -168,12 +168,12 @@ def save_image(image_tensor, filename):
 
 
 def visualize_and_save_patches(original, denoised, restored, idx):
-    if isinstance(original, np.ndarray):
-        original = torch.tensor(original)
-    if isinstance(denoised, np.ndarray):
-        denoised = torch.tensor(denoised)
-    if isinstance(restored, np.ndarray):
-        restored = torch.tensor(restored)
+    # if isinstance(original, np.ndarray):
+    #     original = torch.tensor(original)
+    # if isinstance(denoised, np.ndarray):
+    #     denoised = torch.tensor(denoised)
+    # if isinstance(restored, np.ndarray):
+    #     restored = torch.tensor(restored)
     
     original_file = os.path.join(image_save_dir, f"DnCNN_original_patch_{idx}.png")
     denoised_file = os.path.join(image_save_dir, f"DnCNN_denoised_patch_{idx}.png")
