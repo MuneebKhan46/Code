@@ -312,6 +312,11 @@ for epoch in range(EPOCHS):
 model.load_state_dict(torch.load(os.path.join(model_dir, 'LowFreq_BlockCNN_Model.pth')))
 model.eval()
 
+def save_image(image_tensor, filename):
+    image_array = (image_tensor * 255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
+    image_pil = Image.fromarray(image_array)
+    image_pil.save(filename)
+
 
 def visualize_and_save_patches(original, denoised, restored, idx):
     if isinstance(original, np.ndarray):
