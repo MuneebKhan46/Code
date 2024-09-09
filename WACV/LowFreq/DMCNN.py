@@ -333,7 +333,7 @@ with torch.no_grad():
         original_test = original_test.cpu().numpy()
         
         for i in range(len(outputs_test)):
-            psnr_scores.append(psnr(original_test[i], outputs_test[I]))
+            psnr_scores.append(psnr(original_test[i], outputs_test[i]))
             
             patch_size = min(outputs_test[i].shape[0], outputs_test[i].shape[1])
             
