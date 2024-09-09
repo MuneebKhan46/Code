@@ -148,7 +148,9 @@ for epoch in range(num_epochs):
         original, denoised = original.to(device), denoised.to(device)
         
         output = model(denoised)
-        output = torch.nn.functional.interpolate(output, size=original.shape[2:], mode='bilinear', align_corners=False)
+        if output.size() != original.size():
+            output = torch.nn.functional.interpolate(output, size=original.shape[2:], mode='bilinear', align_corners=False)
+        
         loss = criterion(output, original)
         
         optimizer.zero_grad()
@@ -167,7 +169,8 @@ for epoch in range(num_epochs):
             original_val, denoised_val = original_val.to(device), denoised_val.to(device)
             
             outputs_val = model(denoised_val)
-            outputs_val = torch.nn.functional.interpolate(outputs_val, size=original_val.shape[2:], mode='bilinear', align_corners=False)
+            if outputs_val.size() != original_val.size():
+                outputs_val = torch.nn.functional.interpolate(outputs_val, size=original_val.shape[2:], mode='bilinear', align_corners=False)
 
             loss = criterion(outputs_val, original_val)
             
@@ -236,7 +239,8 @@ with torch.no_grad():
         original_test, denoised_test = original_test.to(device), denoised_test.to(device)
         
         outputs_test = model(denoised_test)
-        outputs_test = torch.nn.functional.interpolate(outputs_test, size=original_test.shape[2:], mode='bilinear', align_corners=False)
+        if outputs_test.size() != original_test.size():
+            outputs_test = torch.nn.functional.interpolate(outputs_test, size=original_test.shape[2:], mode='bilinear', align_corners=False)
 
         outputs_test = outputs_test.cpu().numpy()
         original_test = original_test.cpu().numpy()
@@ -270,7 +274,13 @@ print(f"Average SSIM: {avg_ssim:.4f}")
 results_csv_path = os.path.join(Results_dir, 'results.csv')
 
 results.append({'Model': 'Fast AR-CNN', 'Artifact Type': 'Low Freq', 'PSNR': avg_psnr, 'SSIM': avg_ssim})
-df_results = pd.DataFrame(results)
+
+if os.path.exists(results_csv_path):
+    df_existing = pd.read_csv(results_csv_path)
+    df_new = pd.DataFrame(results)
+    df_results = pd.concat([df_existing, df_new], ignore_index=True)
+else:
+    df_results = pd.DataFrame(results)
 df_results.to_csv(results_csv_path, index=False)
 
 print(f"Results saved to {results_csv_path}")
