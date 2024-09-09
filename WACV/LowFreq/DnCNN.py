@@ -27,6 +27,10 @@ from skimage.metrics import peak_signal_noise_ratio as psnr
 from skimage.metrics import structural_similarity as ssim
 
 
+Results_dir = '/ghosting-artifact-metric/WACV/Result'
+if not os.path.exists(Results_dir):
+    os.makedirs(Results_dir)
+
 
 batch_size = 128
 epochs = 1
