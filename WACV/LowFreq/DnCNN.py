@@ -33,7 +33,7 @@ if not os.path.exists(Results_dir):
 
 
 batch_size = 128
-epochs = 1
+epochs = 50
 initial_lr = 1e-3
 save_every = 1
 patch_size = 224
