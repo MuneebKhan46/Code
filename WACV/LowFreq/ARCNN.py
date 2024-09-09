@@ -162,7 +162,7 @@ for epoch in range(EPOCHS):
 
         total_loss += loss.item()
 
-    print(f"Epoch {epoch+1}/{num_epochs}, Training Loss: {total_loss / len(train_loader):.4f}")
+    print(f"Epoch {epoch+1}/{EPOCHS}, Training Loss: {total_loss / len(train_loader):.4f}")
   
     model.eval()
     val_loss = 0.0
@@ -179,7 +179,7 @@ for epoch in range(EPOCHS):
 
     val_loss /= len(val_loader)
     
-    print(f"Epoch {epoch+1}/{num_epochs}, Validation Loss: {val_loss:.4f}")
+    print(f"Epoch {epoch+1}/{EPOCHS}, Validation Loss: {val_loss:.4f}")
   
     if val_loss < best_val_loss:
         best_val_loss = val_loss
