@@ -148,7 +148,7 @@ for epoch in range(EPOCHS):
         original, denoised = original.to(device), denoised.to(device)
         
         output = model(denoised)
-        
+        output = torch.nn.functional.interpolate(output, size=original.shape[2:], mode='bilinear', align_corners=False)
         loss = criterion(output, original)
         
         optimizer.zero_grad()
@@ -167,7 +167,8 @@ for epoch in range(EPOCHS):
             original_val, denoised_val = original_val.to(device), denoised_val.to(device)
             
             outputs_val = model(denoised_val)
-            
+            outputs_val = torch.nn.functional.interpolate(outputs_val, size=original_val.shape[2:], mode='bilinear', align_corners=False)
+
             loss = criterion(outputs_val, original_val)
             
             val_loss += loss.item()
@@ -235,7 +236,8 @@ with torch.no_grad():
         original_test, denoised_test = original_test.to(device), denoised_test.to(device)
         
         outputs_test = model(denoised_test)
-        
+        outputs_test = torch.nn.functional.interpolate(outputs_test, size=original_test.shape[2:], mode='bilinear', align_corners=False)
+
         outputs_test = outputs_test.cpu().numpy()
         original_test = original_test.cpu().numpy()
 
