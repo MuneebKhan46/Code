@@ -231,32 +231,32 @@ best_val_loss = float('inf')
 epochs_no_improve = 0
 
 for epoch in range(EPOCHS):
-  model.train()
-  train_loss = 0.0
-  for original, denoised in train_loader:
-    original, denoised = original.to(device), denoised.to(device
-    optimizer.zero_grad()
-    outputs = model(denoised)
-    loss = criterion(outputs, original)
-    loss.backward()
-    optimizer.step()
-    train_loss += loss.item()
+    model.train()
+    train_loss = 0.0
+    for original, denoised in train_loader:
+        original, denoised = original.to(device), denoised.to(device)
+        optimizer.zero_grad()
+        outputs = model(denoised)
+        loss = criterion(outputs, original)
+        loss.backward()
+        optimizer.step()
+        train_loss += loss.item()
+    
+    train_loss /= len(train_loader)
+    print(f"Epoch {epoch+1}/{EPOCHS}, Training Loss: {train_loss:.4f}")
+    model.eval()
 
-  train_loss /= len(train_loader)
-  print(f"Epoch {epoch+1}/{EPOCHS}, Training Loss: {train_loss:.4f}")
-
-  model.eval()
-  val_loss = 0.0
-  with torch.no_grad():
-    for original_val, denoised_val in val_loader:
-      original_val, denoised_val = original_val.to(device), denoised_val.to(device)
-      outputs_val = model(denoised_val)
-      loss = criterion(outputs_val, original_val)
-      val_loss += loss.item()
+    val_loss = 0.0
+    with torch.no_grad():
+        for original_val, denoised_val in val_loader:
+        original_val, denoised_val = original_val.to(device), denoised_val.to(device)
+        outputs_val = model(denoised_val)
+        loss = criterion(outputs_val, original_val)
+        val_loss += loss.item()
       
     val_loss /= len(val_loader)
     print(f"Epoch {epoch+1}/{EPOCHS}, Validation Loss: {val_loss:.4f}")
-
+    
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         early_stopping_counter = 0
@@ -278,20 +278,23 @@ psnr_scores, ssim_scores = [], []
 results = []
 
 with torch.no_grad():
-  for original_test, denoised_test in test_loader:
-    original_test, denoised_test = original_test.to(device), denoised_test.to(device)
-    outputs_test = model(denoised_test)
-    outputs_test = outputs_test.cpu().numpy()
-    original_test = original_test.cpu().numpy()
-    for i in range(len(outputs_test)):
-      psnr_scores.append(psnr(original_test[i], outputs_test[I]))
-      patch_size = min(outputs_test[i].shape[0], outputs_test[i].shape[1])
-      win_size = min(7, patch_size)
-      if win_size >= 3:
-        ssim_val = ssim(original_test[i], outputs_test[i], win_size=win_size, channel_axis=-1, data_range=1.0)
-        ssim_scores.append(ssim_val)
-      else:
-        print(f"Skipping SSIM for patch {i} due to insufficient size")
+    for original_test, denoised_test in test_loader:
+        original_test, denoised_test = original_test.to(device), denoised_test.to(device)
+        outputs_test = model(denoised_test)
+        outputs_test = outputs_test.cpu().numpy()
+        original_test = original_test.cpu().numpy()
+        
+        for i in range(len(outputs_test)):
+            psnr_scores.append(psnr(original_test[i], outputs_test[I]))
+            
+            patch_size = min(outputs_test[i].shape[0], outputs_test[i].shape[1])
+            
+            win_size = min(7, patch_size)
+            if win_size >= 3:
+                ssim_val = ssim(original_test[i], outputs_test[i], win_size=win_size, channel_axis=-1, data_range=1.0)
+                ssim_scores.append(ssim_val)
+            else:
+                print(f"Skipping SSIM for patch {i} due to insufficient size")
 
 avg_psnr = np.mean(psnr_scores)
 avg_ssim = np.mean(ssim_scores) if ssim_scores else 0
