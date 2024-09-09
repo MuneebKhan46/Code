@@ -113,9 +113,10 @@ transform = transforms.Compose([
     transforms.ToTensor(),
 ])
 
-original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/original'
-denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
-csv_path = '/ghosting-artifact-metric/Code/Non_Zeros_Classified_label_filtered.csv'
+original_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-low-frequency/original'
+denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-low-frequency/denoised'
+csv_path = '/ghosting-artifact-metric/Code/WACV/LowFreq/Low_frequency_classification_label.csv'
+
 
 
 dataset = CustomDataset(original_dir, denoised_dir, csv_path, transform=transform)
