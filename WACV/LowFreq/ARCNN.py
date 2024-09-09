@@ -21,10 +21,17 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similarity as ssim
 
-
-Results_dir = '/ghosting-artifact-metric/WACV/LowFreq/'
-
 num_epochs = 1
+
+Results_dir = '/ghosting-artifact-metric/WACV/Result'
+if not os.path.exists(Results_dir):
+    os.makedirs(Results_dir)
+
+model_dir = = '/ghosting-artifact-metric/WACV/Model'
+
+if not os.path.exists(model_dir):
+    os.makedirs(model_dir)
+
 
 
 class ARCNN(nn.Module):
@@ -176,13 +183,13 @@ for epoch in range(num_epochs):
   
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), os.path.join(Results_dir, 'model/LowFreq_ARCNN_Model.pth'))
+        torch.save(model.state_dict(), os.path.join(model_dir, 'LowFreq_ARCNN_Model.pth'))
         print(f"New best model saved with validation loss: {val_loss:.4f}")
 
 
 
 
-model.load_state_dict(torch.load(os.path.join(Results_dir, 'model/LowFreq_ARCNN_Model.pth')))
+model.load_state_dict(torch.load(os.path.join(model_dir, 'LowFreq_ARCNN_Model.pth')))
 model.eval()
 
 def save_image(image_tensor, filename):
