@@ -21,7 +21,7 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similarity as ssim
 
-EPOCHS = 50
+EPOCHS = 1
 
 Results_dir = '/ghosting-artifact-metric/WACV/Result'
 if not os.path.exists(Results_dir):
@@ -280,6 +280,6 @@ if os.path.exists(results_csv_path):
     df_results = pd.concat([df_existing, df_new], ignore_index=True)
 else:
     df_results = pd.DataFrame(results)
-df_results.to_csv(results_csv_path, index=False)
+# df_results.to_csv(results_csv_path, index=False)
 
 print(f"Results saved to {results_csv_path}")
