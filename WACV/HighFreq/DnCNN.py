@@ -39,42 +39,42 @@ patch_size = 224
 strategy = tf.distribute.MirroredStrategy()
 
 
-def DnCNN(depth, filters=64, image_channels=3, use_bnorm=True):
-    layer_count = 0
-    inpt = Input(shape=(None, None, image_channels), name='input' + str(layer_count))
-    layer_count += 1
-    x = Conv2D(filters=filters, kernel_size=(3, 3), strides=(1, 1), kernel_initializer='Orthogonal', padding='same', name='conv' + str(layer_count))(inpt)
-    layer_count += 1
-    x = Activation('relu', name='relu' + str(layer_count))(x)
+# def DnCNN(depth, filters=64, image_channels=3, use_bnorm=True):
+#     layer_count = 0
+#     inpt = Input(shape=(None, None, image_channels), name='input' + str(layer_count))
+#     layer_count += 1
+#     x = Conv2D(filters=filters, kernel_size=(3, 3), strides=(1, 1), kernel_initializer='Orthogonal', padding='same', name='conv' + str(layer_count))(inpt)
+#     layer_count += 1
+#     x = Activation('relu', name='relu' + str(layer_count))(x)
 
-    for i in range(depth - 2):
-        layer_count += 1
-        x = Conv2D(filters=filters, kernel_size=(3, 3), strides=(1, 1), kernel_initializer='Orthogonal', padding='same', use_bias=False, name='conv' + str(layer_count))(x)
-        if use_bnorm:
-            layer_count += 1
-            x = BatchNormalization(axis=3, momentum=0.0, epsilon=0.0001, name='bn' + str(layer_count))(x)
-        layer_count += 1
-        x = Activation('relu', name='relu' + str(layer_count))(x)
+#     for i in range(depth - 2):
+#         layer_count += 1
+#         x = Conv2D(filters=filters, kernel_size=(3, 3), strides=(1, 1), kernel_initializer='Orthogonal', padding='same', use_bias=False, name='conv' + str(layer_count))(x)
+#         if use_bnorm:
+#             layer_count += 1
+#             x = BatchNormalization(axis=3, momentum=0.0, epsilon=0.0001, name='bn' + str(layer_count))(x)
+#         layer_count += 1
+#         x = Activation('relu', name='relu' + str(layer_count))(x)
 
-    layer_count += 1
-    x = Conv2D(filters=image_channels, kernel_size=(3, 3), strides=(1, 1), kernel_initializer='Orthogonal', padding='same', use_bias=False, name='conv' + str(layer_count))(x)
-    layer_count += 1
-    x = Subtract(name='subtract' + str(layer_count))([inpt, x])
-    model = Model(inputs=inpt, outputs=x)
+#     layer_count += 1
+#     x = Conv2D(filters=image_channels, kernel_size=(3, 3), strides=(1, 1), kernel_initializer='Orthogonal', padding='same', use_bias=False, name='conv' + str(layer_count))(x)
+#     layer_count += 1
+#     x = Subtract(name='subtract' + str(layer_count))([inpt, x])
+#     model = Model(inputs=inpt, outputs=x)
 
-    return model
+#     return model
 
-def lr_schedule(epoch):
-    if epoch <= 30:
-        lr = initial_lr
-    elif epoch <= 60:
-        lr = initial_lr / 10
-    elif epoch <= 80:
-        lr = initial_lr / 20
-    else:
-        lr = initial_lr / 20
-    print('Current learning rate is %2.8f' % lr)
-    return lr
+# def lr_schedule(epoch):
+#     if epoch <= 30:
+#         lr = initial_lr
+#     elif epoch <= 60:
+#         lr = initial_lr / 10
+#     elif epoch <= 80:
+#         lr = initial_lr / 20
+#     else:
+#         lr = initial_lr / 20
+#     print('Current learning rate is %2.8f' % lr)
+#     return lr
 
 def extract_patches_from_rgb_image(image_path: str, patch_size: int = 224):
     patches = []
@@ -146,16 +146,16 @@ def data_generator(train_orig, train_denoised, batch_size):
 def sum_squared_error(y_true, y_pred):
     return K.sum(K.square(y_pred - y_true)) / 2
 
-with strategy.scope():
-    model = DnCNN(depth=17, filters=64, image_channels=3, use_bnorm=True)
-    model.compile(optimizer=Adam(0.001), loss=sum_squared_error)
-    model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/WACV/Model/HighFreq_DnCNN.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1)
-    lr_scheduler = LearningRateScheduler(lr_schedule)
+# with strategy.scope():
+#     model = DnCNN(depth=17, filters=64, image_channels=3, use_bnorm=True)
+#     model.compile(optimizer=Adam(0.001), loss=sum_squared_error)
+#     model_checkpoint = ModelCheckpoint(filepath='/ghosting-artifact-metric/WACV/Model/HighFreq_DnCNN.keras', save_best_only=True, monitor='val_loss', mode='min', verbose=1)
+#     lr_scheduler = LearningRateScheduler(lr_schedule)
 
 
 
-history = model.fit( data_generator(train_orig, train_denoised, batch_size=batch_size), steps_per_epoch=len(train_orig) // batch_size, epochs=epochs, verbose=1, validation_data=data_generator(val_orig, val_denoised, batch_size=batch_size), 
-                    validation_steps=len(val_orig) // batch_size, callbacks=[lr_scheduler, model_checkpoint])
+# history = model.fit( data_generator(train_orig, train_denoised, batch_size=batch_size), steps_per_epoch=len(train_orig) // batch_size, epochs=epochs, verbose=1, validation_data=data_generator(val_orig, val_denoised, batch_size=batch_size), 
+#                     validation_steps=len(val_orig) // batch_size, callbacks=[lr_scheduler, model_checkpoint])
 
 
 with tf.keras.utils.custom_object_scope({'sum_squared_error': sum_squared_error}):
@@ -223,7 +223,7 @@ for i in range(len(test_orig)):
     psnr_values.append(psnr_value)
     
     if visualized_images < visualize_limit:
-        visualize_and_save_patches(original_test[i], denoised_test[i], outputs_test[i], visualized_images)
+        visualize_and_save_patches(test_orig[i], test_denoised[i], predictions[i], visualized_images)
         visualized_images += 1
     
 
