@@ -273,7 +273,13 @@ print(f"Average SSIM: {avg_ssim:.4f}")
 results_csv_path = os.path.join(Results_dir, 'results.csv')
 
 results.append({'Model': 'AR-CNN', 'Artifact Type': 'Low Freq', 'PSNR': avg_psnr, 'SSIM': avg_ssim})
-df_results = pd.DataFrame(results)
+
+if os.path.exists(results_csv_path):
+    df_existing = pd.read_csv(results_csv_path)
+    df_new = pd.DataFrame(results)
+    df_results = pd.concat([df_existing, df_new], ignore_index=True)
+else:
+    df_results = pd.DataFrame(results)
 df_results.to_csv(results_csv_path, index=False)
 
 print(f"Results saved to {results_csv_path}")
