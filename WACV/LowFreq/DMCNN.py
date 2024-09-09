@@ -25,11 +25,15 @@ LEARNING_RATE = 1e-4
 weight_decay = 1e-4
 EPOCHS = 1
 COLOR_CHANNELS = 3
-RESULTS_DIR = '/ghosting-artifact-metric/Code/'
 CHECKPOINT_INTERVAL = 5
 
-if not os.path.exists(RESULTS_DIR):
-    os.makedirs(RESULTS_DIR)
+Results_dir = '/ghosting-artifact-metric/WACV/Result'
+if not os.path.exists(Results_dir):
+    os.makedirs(Results_dir)
+
+model_dir = '/ghosting-artifact-metric/WACV/Model'
+if not os.path.exists(model_dir):
+    os.makedirs(model_dir)
 
 
 class CustomDataset(Dataset):
@@ -260,7 +264,7 @@ for epoch in range(EPOCHS):
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         early_stopping_counter = 0
-        torch.save(model.state_dict(), os.path.join(RESULTS_DIR, 'Best_DMCNN_model2.pth'))
+        torch.save(model.state_dict(), os.path.join(model_dir, 'lowFreq_DMCNN_model.pth'))
         print(f"New best model saved with validation loss: {val_loss:.4f}")
     else:
         early_stopping_counter += 1
@@ -271,16 +275,60 @@ for epoch in range(EPOCHS):
 
     scheduler.step(val_loss)
 
-model.load_state_dict(torch.load(os.path.join(RESULTS_DIR, 'Best_DMCNN_model2')))
+model.load_state_dict(torch.load(os.path.join(model_dir, 'lowFreq_DMCNN_model.pth')))
 model.eval()
+
+
+def save_image(image_tensor, filename):
+    image_array = (image_tensor * 255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
+    image_pil = Image.fromarray(image_array)
+    image_pil.save(filename)
+
+
+def visualize_and_save_patches(original, denoised, restored, idx):
+    if isinstance(original, np.ndarray):
+        original = torch.tensor(original)
+    if isinstance(denoised, np.ndarray):
+        denoised = torch.tensor(denoised)
+    if isinstance(restored, np.ndarray):
+        restored = torch.tensor(restored)
+    
+    original_file = os.path.join(image_save_dir, f"DMCNN_original_patch_{idx}.png")
+    denoised_file = os.path.join(image_save_dir, f"DMCNN_denoised_patch_{idx}.png")
+    restored_file = os.path.join(image_save_dir, f"DMCNN_restored_patch_{idx}.png")
+    
+    save_image(original, original_file)
+    save_image(denoised, denoised_file)
+    save_image(restored, restored_file)
+
+    # fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+    # axs[0].imshow(original.permute(1, 2, 0).cpu().numpy())
+    # axs[0].set_title("Original Image")
+    # axs[1].imshow(denoised.permute(1, 2, 0).cpu().numpy())
+    # axs[1].set_title("Denoised Image")
+    # axs[2].imshow(restored.permute(1, 2, 0).cpu().numpy())
+    # axs[2].set_title("ARCNN")
+    # for ax in axs:
+    #     ax.axis('off')
+    # plt.show()
+
 
 psnr_scores, ssim_scores = [], []
 results = []
 
+image_save_dir = os.path.join(Results_dir, 'images/DM-CNN/')
+os.makedirs(image_save_dir, exist_ok=True)
+
+visualized_images = 0
+visualize_limit = 2
+
+
 with torch.no_grad():
     for original_test, denoised_test in test_loader:
         original_test, denoised_test = original_test.to(device), denoised_test.to(device)
+        
         outputs_test = model(denoised_test)
+        
         outputs_test = outputs_test.cpu().numpy()
         original_test = original_test.cpu().numpy()
         
@@ -295,6 +343,10 @@ with torch.no_grad():
                 ssim_scores.append(ssim_val)
             else:
                 print(f"Skipping SSIM for patch {i} due to insufficient size")
+            
+            if visualized_images < visualize_limit:
+              visualize_and_save_patches(original_test[i], denoised_test[i], outputs_test[i], visualized_images)
+              visualized_images += 1
 
 avg_psnr = np.mean(psnr_scores)
 avg_ssim = np.mean(ssim_scores) if ssim_scores else 0
