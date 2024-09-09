@@ -249,10 +249,10 @@ for epoch in range(EPOCHS):
     val_loss = 0.0
     with torch.no_grad():
         for original_val, denoised_val in val_loader:
-        original_val, denoised_val = original_val.to(device), denoised_val.to(device)
-        outputs_val = model(denoised_val)
-        loss = criterion(outputs_val, original_val)
-        val_loss += loss.item()
+            original_val, denoised_val = original_val.to(device), denoised_val.to(device)
+            outputs_val = model(denoised_val)
+            loss = criterion(outputs_val, original_val)
+            val_loss += loss.item()
       
     val_loss /= len(val_loader)
     print(f"Epoch {epoch+1}/{EPOCHS}, Validation Loss: {val_loss:.4f}")
