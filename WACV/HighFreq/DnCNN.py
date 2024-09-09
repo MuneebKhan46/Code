@@ -162,8 +162,8 @@ with tf.keras.utils.custom_object_scope({'sum_squared_error': sum_squared_error}
     model = tf.keras.models.load_model("/ghosting-artifact-metric/WACV/Model/HighFreq_DnCNN.keras")
 
 def save_image(image_tensor, filename):
-    image_array = (image_tensor * 255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
-    image_pil = Image.fromarray(image_array)
+    # image_array = (image_tensor * 255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
+    image_pil = Image.fromarray(image_tensor)
     image_pil.save(filename)
 
 
