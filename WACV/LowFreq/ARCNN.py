@@ -21,7 +21,7 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similarity as ssim
 
-num_epochs = 1
+EPOCHS = 50
 
 Results_dir = '/ghosting-artifact-metric/WACV/Result'
 if not os.path.exists(Results_dir):
@@ -144,7 +144,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 best_val_loss = float('inf')
 
 
-for epoch in range(num_epochs):
+for epoch in range(EPOCHS):
     
     model.train()
     total_loss = 0
