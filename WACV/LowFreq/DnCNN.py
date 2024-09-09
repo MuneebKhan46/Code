@@ -216,6 +216,11 @@ for i in range(len(test_orig)):
         print(f"Skipping SSIM for image {i} due to insufficient size (patch size: {patch_size})")
     
     psnr_values.append(psnr_value)
+    
+    if visualized_images < visualize_limit:
+        visualize_and_save_patches(original_test[i], denoised_test[i], outputs_test[i], visualized_images)
+        visualized_images += 1
+    
 
 
 avg_psnr = np.mean(psnr_values)
