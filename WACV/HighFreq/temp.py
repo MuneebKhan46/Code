@@ -153,17 +153,13 @@ def combined_loss(y_true, y_pred):
 
 
 denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, denoised_dir)
-print(len(labels))
 combined_patches = compute_fft_features(denoised_patches)
 
-print(f"Patches Shape and Size: {combined_patches[0].shape, len(combined_patches)}")
-
-
 diff_patches_np, labels_np = prepare_data(combined_patches, labels)
+
 print(f" Total Patches: {len(diff_patches_np)}")
+print(f" Patch shape: {diff_patches_np[0].shape}")
 print(f" Total Labels: {len(labels_np)}")
-print(f" Total Patches: {diff_patches_np[0].shape}")
-print(f" Total Labels: {labels_np.shape}")
 
 
 X_train, X_temp, y_train, y_temp = train_test_split(diff_patches_np, labels_np, test_size=0.2, random_state=42)
@@ -191,26 +187,26 @@ print(f"Class Weights: {class_weight_dict}")
 
 
 a=class_weight_dict[1]
-print(a)
+print(f"Class Weights ratio: {a}")
 
 class_weight_ratio = 3.14
 
 
 
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
-checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
+# early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
+# checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
+# reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
 
 
-model = create_cnn_model(input_shape=(224, 224, 2))
-opt = Adam(learning_rate=2e-05)
-model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
-wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val),
-                        callbacks=[checkpoint, reduce_lr, early_stopping])
+# model = create_cnn_model(input_shape=(224, 224, 2))
+# opt = Adam(learning_rate=2e-05)
+# model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
+# wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val),
+#                         callbacks=[checkpoint, reduce_lr, early_stopping])
 
 
 from tensorflow.keras.models import load_model
-model = load_model('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5')
+model = load_model('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5',custom_objects={'combined_loss': combined_loss})
 
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
