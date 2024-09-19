@@ -154,6 +154,7 @@ def combined_loss(y_true, y_pred):
 
 
 denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, denoised_dir)
+print(len(labels)
 combined_patches = compute_fft_features(denoised_patches)
 
 print(f"Patches Shape and Size: {combined_patches[0].shape, len(combined_patches)}")
