@@ -199,7 +199,7 @@ fft_patches = compute_fft_features(denoised_patches)
 print(f" FFT Patch shape: {fft_patches[0].shape}")
 
 patches = combine_features(diff_patches_exp, fft_patches)
-
+print(f"Combined feature shape: {patches[0].shape}")
 
 diff_patches_np, labels_np = prepare_data(patches, labels)
 print(f" Total Patches: {len(diff_patches_np)}")
