@@ -231,39 +231,39 @@ class_weight_ratio = { 0: 0.594434556407448,  1: 3.1473359913011962 }
 # class_weight_ratio = 3.14
 
 
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
-checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model2.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
+# early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
+# checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model2.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
+# reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
 
 
-model = create_cnn_model(input_shape=(224, 224, 2))
+# model = create_cnn_model(input_shape=(224, 224, 2))
 
-initial_learning_rate = 2e-05
-lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
-opt = Adam(learning_rate=lr_schedule)
+# initial_learning_rate = 2e-05
+# lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
+# opt = Adam(learning_rate=lr_schedule)
 
-model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
-wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val), callbacks=[checkpoint, reduce_lr, early_stopping])
-
-
-model = load_model('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5',custom_objects={'combined_loss': combined_loss})
+# model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
+# wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val), callbacks=[checkpoint, reduce_lr, early_stopping])
 
 
-test_loss, test_acc = model.evaluate(X_test, y_test)
-print(f"Test Accuracy: {test_acc}, Test Loss: {test_loss}")
-
-y_pred_prob = model.predict(X_test) 
-y_pred = np.where(y_pred_prob > 0.5, 1, 0)
+# model = load_model('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5',custom_objects={'combined_loss': combined_loss})
 
 
-conf_matrix = confusion_matrix(y_test, y_pred)
-TN, FP, FN, TP = conf_matrix.ravel()
-accuracy_0 = TN / (TN + FP) * 100
-accuracy_1 = TP / (TP + FN) * 100
-print(f"Non-Ghosting Accuracy: {accuracy_0}")
-print(f"Ghosting Accuracy: {accuracy_1}")
+# test_loss, test_acc = model.evaluate(X_test, y_test)
+# print(f"Test Accuracy: {test_acc}, Test Loss: {test_loss}")
+
+# y_pred_prob = model.predict(X_test) 
+# y_pred = np.where(y_pred_prob > 0.5, 1, 0)
 
 
-class_report = classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"], output_dict=True)
-print("Classification Report:")
-print(classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"]))
+# conf_matrix = confusion_matrix(y_test, y_pred)
+# TN, FP, FN, TP = conf_matrix.ravel()
+# accuracy_0 = TN / (TN + FP) * 100
+# accuracy_1 = TP / (TP + FN) * 100
+# print(f"Non-Ghosting Accuracy: {accuracy_0}")
+# print(f"Ghosting Accuracy: {accuracy_1}")
+
+
+# class_report = classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"], output_dict=True)
+# print("Classification Report:")
+# print(classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"]))
