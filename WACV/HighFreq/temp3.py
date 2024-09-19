@@ -93,7 +93,7 @@ def create_cnn_model(input_shape=(224,224, 1)):
   input_spatial = Input(shape=input_shape)
   input_frequency = Input(shape=input_shape)
   
-  x1= Conv2D(32, kernel_size=(3,3), activation='relu', input_shape=input_spatial)
+  x1 = Conv2D(32, kernel_size=(3,3), activation='relu')(input_spatial)
   x1= Conv2D(32, kernel_size=(3,3), activation='relu')(x1)
   x1= Dropout(0.5)(x1)
   x1= MaxPooling2D(pool_size=(3,3))(x1)
@@ -107,7 +107,7 @@ def create_cnn_model(input_shape=(224,224, 1)):
   x1= BatchNormalization()(x1)
 
 
-  x2= Conv2D(32, kernel_size=(3,3), activation='relu', input_shape=input_frequency)
+  x2 = Conv2D(32, kernel_size=(3,3), activation='relu')(input_frequency)
   x2= Conv2D(32, kernel_size=(3,3), activation='relu')(x2)
   x2= Dropout(0.5)(x2)
   x2= MaxPooling2D(pool_size=(3,3))(x2)
@@ -185,12 +185,8 @@ class_weights = class_weight.compute_class_weight(
 
 class_weight_dict = dict(enumerate(class_weights))
 print(f"Class Weights: {class_weight_dict}")
+class_weight_ratio = class_weight_dict[1]
 
-
-a=class_weight_dict[1]
-print(f"Class Weights ratio: {a}")
-
-class_weight_ratio = 3.14
 
 
 
@@ -199,7 +195,7 @@ checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_M
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
 
 
-model = create_cnn_model(input_shape=(224, 224, 2))
+model = create_cnn_model(input_shape=(224, 224, 1))
 opt = Adam(learning_rate=2e-05)
 model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
 wcw_history = model.fit([X_train_spatial, X_train_fft], y_train, epochs=100, class_weight=class_weight_dict, validation_data=([X_val_spatial, X_val_fft], y_val), callbacks=[checkpoint, reduce_lr, early_stopping])
@@ -226,3 +222,13 @@ print(f"Ghosting Accuracy: {accuracy_1}")
 class_report = classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"], output_dict=True)
 print("Classification Report:")
 print(classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"]))
+
+
+
+
+class_report = classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"], output_dict=True)
+accuracy_0 = class_report["Non-Ghosting"]["precision"]
+accuracy_1 = class_report["Ghosting"]["precision"]
+print(f"Non-Ghosting Accuracy: {accuracy_0}")
+print(f"Ghosting Accuracy: {accuracy_1}")
+
