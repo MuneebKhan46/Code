@@ -108,7 +108,7 @@ def create_cnn_model(input_shape=(224,224, 1)):
 
 
   x2= Conv2D(32, kernel_size=(3,3), activation='relu', input_shape=input_frequency)
-  x2 Conv2D(32, kernel_size=(3,3), activation='relu')(x2)
+  x2= Conv2D(32, kernel_size=(3,3), activation='relu')(x2)
   x2= Dropout(0.5)(x2)
   x2= MaxPooling2D(pool_size=(3,3))(x2)
   x2= BatchNormalization()(x2)
