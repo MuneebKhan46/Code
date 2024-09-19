@@ -195,16 +195,18 @@ print(f" Denoised shape: {denoised_patches[0].shape}")
 
 
 diff_patches = calculate_difference(original_patches, denoised_patches)
-print(f" Patch shape: {diff_patches[0].shape}")
+print(f" Diff Patch shape: {diff_patches[0].shape}")
 
 
-# fft_patches = compute_fft_features(denoised_patches)
+fft_patches = compute_fft_features(denoised_patches)
+print(f" FFT Patch shape: {fft_patches[0].shape}")
+
 # patches = combine_features(diff_patches, fft_patches)
 
-# diff_patches_np, labels_np = prepare_data(patches, labels)
+diff_patches_np, labels_np = prepare_data(patches, labels)
 
 # print(f" Total Patches: {len(diff_patches_np)}")
-# print(f" Patch shape: {diff_patches_np[0].shape}")
+print(f" Patch shape: {diff_patches_np[0].shape}")
 # print(f" Total Labels: {len(labels_np)}")
 
 
