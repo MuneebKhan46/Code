@@ -112,7 +112,7 @@ def prepare_data(data, labels):
   lbl = np.array(labels)
   return data, lbl
 
-def create_cnn_model(input_shape=(224,224, 3)):
+def create_cnn_model(input_shape=(224,224, 2)):
   model = Sequential()
   model.add(Conv2D(32, kernel_size=(3,3), activation='elu', input_shape=input_shape))
   model.add(Conv2D(32, kernel_size=(3,3), activation='elu'))
@@ -154,43 +154,14 @@ def compute_fft_features(patches):
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-import pywt
 
-def compute_wavelet_features(patches):
-    wavelet_features = []
-    target_shape = (224, 224)  # Set target shape to 224x224
-    
-    for patch in patches:
-        coeffs = pywt.wavedec2(patch.squeeze(), 'db1', level=2)
-        # Extract coefficients
-        cA2, (cH2, cV2, cD2), (cH1, cV1, cD1) = coeffs
-        
-        # Resize all coefficients to the target shape
-        cA2_resized = cv2.resize(cA2, target_shape)
-        cH2_resized = cv2.resize(cH2, target_shape)
-        cV2_resized = cv2.resize(cV2, target_shape)
-        cD2_resized = cv2.resize(cD2, target_shape)
-        cH1_resized = cv2.resize(cH1, target_shape)
-        cV1_resized = cv2.resize(cV1, target_shape)
-        cD1_resized = cv2.resize(cD1, target_shape)
-        
-        # Concatenate resized coefficients along the last axis
-        features = np.stack([cA2_resized, cH2_resized, cV2_resized, cD2_resized, cH1_resized, cV1_resized, cD1_resized], axis=-1)
-        
-        wavelet_features.append(features)
-    
-    return np.array(wavelet_features)
-
-#########################################################################################################################################################################################################################################
-#########################################################################################################################################################################################################################################
-
-def combine_features(diff_patches, fft_patches, wave_patches):
+def combine_features(diff_patches, fft_patches):
     combined_features = []
-    for diff, fft, wv in zip(diff_patches, fft_patches, wave_patches):
-        if diff.shape == fft.shape == wv.shape:
-            combined_features.append(np.stack((diff, fft, wv), axis=-1))
+    for diff, fft in zip(diff_patches, fft_patches):
+        if diff.shape == fft.shape:
+            combined_features.append(np.stack((diff, fft), axis=-1))
         else:
-            print(f"Shape mismatch: {diff.shape}, {fft.shape}, {wv.shape}")
+            print(f"Shape mismatch: {diff.shape}, {fft.shape}")
     return np.array(combined_features)
 
 
@@ -223,9 +194,7 @@ original_patches, denoised_patches, labels, denoised_image_names, all_patch_numb
 diff_patches = calculate_difference(original_patches, denoised_patches)
 
 fft_patches = compute_fft_features(denoised_patches)
-wave_patches = compute_wavelet_features(denoised_patches)
-
-patches = combine_features(diff_patches, fft_patches, wave_patches)
+patches = combine_features(diff_patches, fft_patches)
 
 diff_patches_np, labels_np = prepare_data(patches, labels)
 
