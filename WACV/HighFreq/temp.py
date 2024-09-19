@@ -7,9 +7,9 @@ import tensorflow as tf
 from tensorflow import keras
 import tensorflow.keras.backend as K
 
-from keras.models import Sequential
 from keras.regularizers import l2
 from keras.optimizers import Adam
+from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization, concatenate
 
@@ -17,9 +17,6 @@ from sklearn.utils import class_weight
 from sklearn.utils import shuffle as sklearn_shuffle
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report
-
-# import matplotlib.pyplot as plt
-# import seaborn as sns
 
 denoised_dir = '/ghosting-artifact-metric/dataset/m-gaid-dataset-high-frequency/denoised'
 csv_path = '/ghosting-artifact-metric/Code/WACV/HighFreq/high_frequency_classification_label.csv'
@@ -193,19 +190,18 @@ class_weight_ratio = 3.14
 
 
 
-# early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
-# checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
-# reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
+checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
 
 
-# model = create_cnn_model(input_shape=(224, 224, 2))
-# opt = Adam(learning_rate=2e-05)
-# model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
-# wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val),
-#                         callbacks=[checkpoint, reduce_lr, early_stopping])
+model = create_cnn_model(input_shape=(224, 224, 2))
+opt = Adam(learning_rate=2e-05)
+model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
+wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val),
+                        callbacks=[checkpoint, reduce_lr, early_stopping])
 
 
-from tensorflow.keras.models import load_model
 model = load_model('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5',custom_objects={'combined_loss': combined_loss})
 
 
@@ -218,32 +214,12 @@ y_pred = np.where(y_pred_prob > 0.5, 1, 0)
 
 conf_matrix = confusion_matrix(y_test, y_pred)
 TN, FP, FN, TP = conf_matrix.ravel()
-
-
-print("Confusion Matrix:")
-print(conf_matrix)
-
-# plt.figure(figsize=(6, 6))
-# sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=["Non-Ghosting", "Ghosting"], yticklabels=["Non-Ghosting", "Ghosting"])
-# plt.ylabel('Actual Label')
-# plt.xlabel('Predicted Label')
-# plt.title('Confusion Matrix')
-# plt.show()
+accuracy_0 = TN / (TN + FP) * 100
+accuracy_1 = TP / (TP + FN) * 100
+print(f"Non-Ghosting Accuracy: {accuracy_0}")
+print(f"Ghosting Accuracy: {accuracy_1}")
 
 
 class_report = classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"], output_dict=True)
 print("Classification Report:")
 print(classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"]))
-
-non_ghosting_accuracy = class_report['Non-Ghosting']['recall'] 
-ghosting_accuracy = class_report['Ghosting']['recall'] 
-
-print(f"Non-Ghosting Accuracy: {non_ghosting_accuracy}")
-print(f"Ghosting Accuracy: {ghosting_accuracy}")
-
-
-
-accuracy_0 = TN / (TN + FP) * 100
-accuracy_1 = TP / (TP + FN) * 100
-print(f"Non-Ghosting Accuracy: {accuracy_0}")
-print(f"Ghosting Accuracy: {accuracy_1}")
