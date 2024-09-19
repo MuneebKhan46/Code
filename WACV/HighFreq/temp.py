@@ -93,44 +93,6 @@ def prepare_data(data, labels):
   lbl = np.array(labels)
   return data, lbl
 
-
-
-def save_metric_details(model_name, technique, feature_name, test_acc, weighted_precision, weighted_recall, weighted_f1_score, test_loss, accuracy_0, accuracy_1, result_file_path):
-  function = "Sigmoid"
-  if path.exists(result_file_path):
-    df_existing = pd.read_csv(result_file_path)
-    df_new_row = pd.DataFrame({
-      'Model': [model_name],
-      'Technique' : [technique],
-      'Feature Map' : [feature_name],
-      'Function' : [function],
-      'Overall Accuracy': [test_acc],
-      'Precision': [weighted_precision],
-      'Recall': [weighted_recall],
-      'F1-Score': [weighted_f1_score],
-      'Loss': [test_loss],
-      'Non-Ghosting Artifacts Accuracy': [accuracy_0],
-      'Ghosting Artifacts Accuracy': [accuracy_1]
-    })
-    df_metrics = pd.concat([df_existing, df_new_row], ignore_index=True)
-  else:
-    df_metrics = pd.DataFrame({
-      'Model': [model_name],
-      'Technique' : [technique],            
-      'Feature Map' : [feature_name],
-      'Function' : [function],
-      'Overall Accuracy': [test_acc],
-      'Precision': [weighted_precision],
-      'Recall': [weighted_recall],
-      'F1-Score': [weighted_f1_score],
-      'Loss': [test_loss],
-      'Non-Ghosting Artifacts Accuracy': [accuracy_0],
-      'Ghosting Artifacts Accuracy': [accuracy_1]
-    })
-    df_metrics.to_csv(result_file_path, index=False)
-
-
-
 def create_cnn_model(input_shape=(224,224, 2)):
   model = Sequential()
   model.add(Conv2D(32, kernel_size=(3,3), activation='elu', input_shape=input_shape))
@@ -171,19 +133,6 @@ def compute_fft_features(patches):
   return combined_patches
 
 
-
-denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, denoised_dir)
-combined_patches = compute_fft_features(denoised_patches)
-
-print(f"Patches Shape and Size: {combined_patches[0].shape, len(combined_patches)}")
-
-
-diff_patches_np, labels_np = prepare_data(combined_patches, labels)
-print(f" Total Patches: {len(diff_patches_np)}")
-print(f" Total Labels: {len(labels_np)}")
-
-
-
 def focal_loss(alpha=0.25, gamma=2.0):
   def focal_loss_fixed(y_true, y_pred):
     y_true = K.cast(y_true, K.floatx())
@@ -203,6 +152,18 @@ def combined_loss(y_true, y_pred):
   per_replica_loss = fl + class_weight_ratio * ce
   return tf.reduce_sum(per_replica_loss) * (1.0 / tf.distribute.get_strategy().num_replicas_in_sync)
 
+
+denoised_patches, labels, denoised_image_names, all_patch_numbers = load_data_from_csv(csv_path, denoised_dir)
+combined_patches = compute_fft_features(denoised_patches)
+
+print(f"Patches Shape and Size: {combined_patches[0].shape, len(combined_patches)}")
+
+
+diff_patches_np, labels_np = prepare_data(combined_patches, labels)
+print(f" Total Patches: {len(diff_patches_np)}")
+print(f" Total Labels: {len(labels_np)}")
+print(f" Total Patches: {diff_patches_np[0].shape}")
+print(f" Total Labels: {labels_np.shape}")
 
 
 X_train, X_temp, y_train, y_temp = train_test_split(diff_patches_np, labels_np, test_size=0.2, random_state=42)
