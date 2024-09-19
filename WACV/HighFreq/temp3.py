@@ -170,7 +170,7 @@ fft_patches_np, _ = prepare_data(fft_patches, labels)
 
 
 X_train_spatial, X_temp_spatial, X_train_fft, X_temp_fft, y_train, y_temp = train_test_split( denoised_patches_np, fft_patches_np, labels_np, test_size=0.2, random_state=42)
-X_val_spatial, X_test_spatial, X_val_fft, X_test_fft, y_val, y_test = train_test_split(X_temp_spatial, X_temp_fft, y_temp, test_size=0.5, random_state=42 
+X_val_spatial, X_test_spatial, X_val_fft, X_test_fft, y_val, y_test = train_test_split(X_temp_spatial, X_temp_fft, y_temp, test_size=0.5, random_state=42)
 
 
 print(f"Training set: {X_train_spatial.shape}, {X_train_fft.shape}, {y_train.shape}")
