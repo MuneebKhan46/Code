@@ -158,17 +158,25 @@ import pywt
 
 def compute_wavelet_features(patches):
     wavelet_features = []
+    target_shape = (224, 224)  # Set target shape to 224x224
+    
     for patch in patches:
         coeffs = pywt.wavedec2(patch.squeeze(), 'db1', level=2)
+        # Extract coefficients
         cA2, (cH2, cV2, cD2), (cH1, cV1, cD1) = coeffs
         
-        cA2_resized = np.resize(cA2, cH1.shape)
-        cH2_resized = np.resize(cH2, cH1.shape)
-        cV2_resized = np.resize(cV2, cH1.shape)
-        cD2_resized = np.resize(cD2, cH1.shape)
+        # Resize all coefficients to the target shape
+        cA2_resized = cv2.resize(cA2, target_shape)
+        cH2_resized = cv2.resize(cH2, target_shape)
+        cV2_resized = cv2.resize(cV2, target_shape)
+        cD2_resized = cv2.resize(cD2, target_shape)
+        cH1_resized = cv2.resize(cH1, target_shape)
+        cV1_resized = cv2.resize(cV1, target_shape)
+        cD1_resized = cv2.resize(cD1, target_shape)
         
-        features = np.concatenate([cA2_resized, cH2_resized, cV2_resized, cD2_resized, cH1, cV1, cD1], axis=-1)
-        features = features.reshape(features.shape[0], features.shape[1], 1)
+        # Concatenate resized coefficients along the last axis
+        features = np.stack([cA2_resized, cH2_resized, cV2_resized, cD2_resized, cH1_resized, cV1_resized, cD1_resized], axis=-1)
+        
         wavelet_features.append(features)
     
     return np.array(wavelet_features)
