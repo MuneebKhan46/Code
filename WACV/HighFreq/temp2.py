@@ -177,8 +177,14 @@ def compute_wavelet_features(patches):
 #########################################################################################################################################################################################################################################
 
 def combine_features(diff_patches, fft_patches, wave_patches):
-    combined_features = [np.stack((diff, fft, wv), axis=-1) for diff, fft, wv in zip(diff_patches, fft_patches, wave_patches)]
-    return combined_features
+    combined_features = []
+    for diff, fft, wv in zip(diff_patches, fft_patches, wave_patches):
+        if diff.shape == fft.shape == wv.shape:
+            combined_features.append(np.stack((diff, fft, wv), axis=-1))
+        else:
+            print(f"Shape mismatch: {diff.shape}, {fft.shape}, {wv.shape}")
+    return np.array(combined_features)
+
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
