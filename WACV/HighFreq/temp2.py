@@ -232,10 +232,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr
 
 
 model = create_cnn_model(input_shape=(224, 224, 2))
-
-initial_learning_rate = 2e-05
-lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
-opt = Adam(learning_rate=lr_schedule)
+opt = Adam(learning_rate= 2e-05)
 
 model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
 wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val), callbacks=[checkpoint, reduce_lr, early_stopping])
