@@ -238,7 +238,7 @@ class_weight_ratio = 3.14
 strategy = tf.distribute.MirroredStrategy()
 
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
-checkpoint = ModelCheckpoint('//ghosting-artifact-metric/Code/WACV/New_Model.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
+checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
 
 with strategy.scope():
@@ -247,6 +247,10 @@ with strategy.scope():
   model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
   wcw_history = model.fit(X_train, y_train, epochs=50, class_weight=class_weight_dict, validation_data=(X_val, y_val), 
                           callbacks=[checkpoint, reduce_lr, early_stopping])
+
+
+from tensorflow.keras.models import load_model
+model = load_model('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5')
 
 
 test_loss, test_acc = model.evaluate(X_test, y_test)
