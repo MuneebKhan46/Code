@@ -155,15 +155,24 @@ def compute_fft_features(patches):
 #########################################################################################################################################################################################################################################
 
 
+# def combine_features(diff_patches, fft_patches):
+#     combined_features = []
+#     for diff, fft in zip(diff_patches, fft_patches):
+#         if diff.shape == fft.shape:
+#             combined_features.append(np.stack((diff, fft), axis=-1))
+#         else:
+#             print(f"Shape mismatch: {diff.shape}, {fft.shape}")
+#     return np.array(combined_features)
+
 def combine_features(diff_patches, fft_patches):
     combined_features = []
     for diff, fft in zip(diff_patches, fft_patches):
         if diff.shape == fft.shape:
-            combined_features.append(np.stack((diff, fft), axis=-1))
+            # Use np.concatenate along the last axis (-1) to combine the features
+            combined_features.append(np.concatenate((diff, fft), axis=-1))
         else:
             print(f"Shape mismatch: {diff.shape}, {fft.shape}")
     return np.array(combined_features)
-
 
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
@@ -198,8 +207,9 @@ print(f"Expanded Diff Patch shape: {diff_patches_exp[0].shape}")
 fft_patches = compute_fft_features(denoised_patches)
 print(f" FFT Patch shape: {fft_patches[0].shape}")
 
-patches = combine_features(diff_patches_exp, fft_patches)
-print(f"Combined feature shape: {patches[0].shape}")
+combined_features = combine_features(diff_patches_exp, fft_patches)
+print(f"Combined feature shape: {combined_features[0].shape}")
+
 
 diff_patches_np, labels_np = prepare_data(patches, labels)
 print(f" Total Patches: {len(diff_patches_np)}")
@@ -207,25 +217,25 @@ print(f" Patch shape: {diff_patches_np[0].shape}")
 print(f" Total Labels: {len(labels_np)}")
 
 
-X_train, X_temp, y_train, y_temp = train_test_split(diff_patches_np, labels_np, test_size=0.2, random_state=42)
-X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+# X_train, X_temp, y_train, y_temp = train_test_split(diff_patches_np, labels_np, test_size=0.2, random_state=42)
+# X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
 
-def print_class_distribution(y, dataset_name):
-  unique, counts = np.unique(y, return_counts=True)
-  print(f"{dataset_name} class distribution: {dict(zip(unique, counts))}")
+# def print_class_distribution(y, dataset_name):
+#   unique, counts = np.unique(y, return_counts=True)
+#   print(f"{dataset_name} class distribution: {dict(zip(unique, counts))}")
 
-print_class_distribution(y_train, "Training")
-print_class_distribution(y_val, "Validation")
-print_class_distribution(y_test, "Test")
+# print_class_distribution(y_train, "Training")
+# print_class_distribution(y_val, "Validation")
+# print_class_distribution(y_test, "Test")
 
-class_weights = class_weight.compute_class_weight( class_weight='balanced', classes=np.unique(y_train), y=y_train )
+# class_weights = class_weight.compute_class_weight( class_weight='balanced', classes=np.unique(y_train), y=y_train )
 
-class_weight_dict = dict(enumerate(class_weights))
-print(f"Class Weights: {class_weight_dict}")
+# class_weight_dict = dict(enumerate(class_weights))
+# print(f"Class Weights: {class_weight_dict}")
 
 
-class_weight_ratio = { 0: 0.594434556407448,  1: 3.1473359913011962 }
+# class_weight_ratio = { 0: 0.594434556407448,  1: 3.1473359913011962 }
 # a=class_weight_dict[1]
 # print(f"Class Weights ratio: {a}")
 # class_weight_ratio = 3.14
