@@ -87,8 +87,10 @@ def load_data_from_csv(csv_path, original_dir, denoised_dir):
         all_patch_numbers.extend(denoised_patch_numbers) 
 
 
-        scores = np.array([0 if float(score) == 0 else 1 for score in row['patch_score'].split(',')])
-        if len(scores) != len(original_patches) or len(scores) != len(denoised_patches):
+        patch_scores = row['patch_score'].strip('[]').split(', ')
+        scores = np.array([0 if float(score) == 0 else 1 for score in patch_scores])
+        
+        if len(scores) != len(denoised_patches):
             print(f"Error: Mismatch in number of patches and scores for {row['image_name']}")
             continue
         all_scores.extend(scores)
