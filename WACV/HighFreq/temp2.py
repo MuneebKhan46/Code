@@ -188,9 +188,9 @@ print(f"Class Weights ratio: {a}")
 class_weight_ratio = 3.14
 
 def objective(trial):
-    learning_rate = trial.suggest_loguniform('learning_rate', 1e-6, 1e-5, 1e-3)
+    learning_rate = trial.suggest_loguniform('learning_rate', 1e-5, 1e-3)
     num_filters = trial.suggest_categorical('num_filters', [32, 64, 128])
-    dropout_rate = trial.suggest_uniform('dropout_rate', 0.2, 0.3, 0.5, 0.7)
+    dropout_rate = trial.suggest_uniform('dropout_rate', 0.2, 0.7)
     dense_units = trial.suggest_categorical('dense_units', [64, 128, 256])
     optimizer_name = trial.suggest_categorical('optimizer', ['adam', 'rmsprop'])
 
