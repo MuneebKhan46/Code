@@ -197,6 +197,9 @@ print(f" Denoised shape: {denoised_patches[0].shape}")
 diff_patches = calculate_difference(original_patches, denoised_patches)
 print(f" Diff Patch shape: {diff_patches[0].shape}")
 
+diff_patches_expanded = np.expand_dims(diff_patches, axis=-1)
+print(f"Expanded Diff Patch shape: {diff_patches_expanded[0].shape}")
+
 diff_patches_np, labels_np = prepare_data(diff_patches, labels)
 print(f" Patch shape: {diff_patches_np[0].shape}")
 
