@@ -160,11 +160,17 @@ def compute_wavelet_features(patches):
     wavelet_features = []
     for patch in patches:
         coeffs = pywt.wavedec2(patch.squeeze(), 'db1', level=2)
-        # Concatenate coefficients
         cA2, (cH2, cV2, cD2), (cH1, cV1, cD1) = coeffs
-        features = np.concatenate([cA2, cH2, cV2, cD2, cH1, cV1, cD1], axis=-1)
+        
+        cA2_resized = np.resize(cA2, cH1.shape)
+        cH2_resized = np.resize(cH2, cH1.shape)
+        cV2_resized = np.resize(cV2, cH1.shape)
+        cD2_resized = np.resize(cD2, cH1.shape)
+        
+        features = np.concatenate([cA2_resized, cH2_resized, cV2_resized, cD2_resized, cH1, cV1, cD1], axis=-1)
         features = features.reshape(features.shape[0], features.shape[1], 1)
         wavelet_features.append(features)
+    
     return np.array(wavelet_features)
 
 #########################################################################################################################################################################################################################################
@@ -238,11 +244,12 @@ class_weight_dict = dict(enumerate(class_weights))
 print(f"Class Weights: {class_weight_dict}")
 
 
-a=class_weight_dict[1]
-print(f"Class Weights ratio: {a}")
+# a=class_weight_dict[1]
+# print(f"Class Weights ratio: {a}")
 
-class_weight_ratio = 3.14
+# class_weight_ratio = 3.14
 
+class_weight_ratio = { 0: 0.594434556407448,  1: 3.1473359913011962 }
 
 
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
