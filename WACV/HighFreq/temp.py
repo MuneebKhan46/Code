@@ -81,8 +81,7 @@ def load_data_from_csv(csv_path, denoised_dir):
     if len(scores) != len(denoised_patches):
       print(f"Error: Mismatch in number of patches and scores for {row['image_name']}")
       continue
-        
-  all_scores.extend(scores)
+    all_scores.extend(scores)
   
   return all_denoised_patches, all_scores, denoised_image_names, all_patch_numbers
 
