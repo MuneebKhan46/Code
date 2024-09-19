@@ -9,7 +9,7 @@ import tensorflow.keras.backend as K
 
 from keras.regularizers import l2
 from keras.optimizers import Adam
-from keras.optimizers.schedules import ExponentialDecay
+from tensorflow.keras.optimizers.schedules import ExponentialDecay
 from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization, concatenate
