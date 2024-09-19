@@ -154,16 +154,6 @@ def compute_fft_features(patches):
 #########################################################################################################################################################################################################################################
 #########################################################################################################################################################################################################################################
 
-
-# def combine_features(diff_patches, fft_patches):
-#     combined_features = []
-#     for diff, fft in zip(diff_patches, fft_patches):
-#         if diff.shape == fft.shape:
-#             combined_features.append(np.stack((diff, fft), axis=-1))
-#         else:
-#             print(f"Shape mismatch: {diff.shape}, {fft.shape}")
-#     return np.array(combined_features)
-
 def combine_features(diff_patches, fft_patches):
     combined_features = []
     for diff, fft in zip(diff_patches, fft_patches):
@@ -202,78 +192,73 @@ original_patches, denoised_patches, labels, denoised_image_names, all_patch_numb
 
 diff_patches = calculate_difference(original_patches, denoised_patches)
 diff_patches_exp = np.expand_dims(diff_patches, axis=-1)
-print(f"Expanded Diff Patch shape: {diff_patches_exp[0].shape}")
 
 fft_patches = compute_fft_features(denoised_patches)
-print(f" FFT Patch shape: {fft_patches[0].shape}")
-
 combined_features = combine_features(diff_patches_exp, fft_patches)
-print(f"Combined feature shape: {combined_features[0].shape}")
 
-
-diff_patches_np, labels_np = prepare_data(patches, labels)
-print(f" Total Patches: {len(diff_patches_np)}")
+diff_patches_np, labels_np = prepare_data(combined_features, labels)
 print(f" Patch shape: {diff_patches_np[0].shape}")
+print(f" Total Patches: {len(diff_patches_np)}")
 print(f" Total Labels: {len(labels_np)}")
 
 
-# X_train, X_temp, y_train, y_temp = train_test_split(diff_patches_np, labels_np, test_size=0.2, random_state=42)
-# X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+X_train, X_temp, y_train, y_temp = train_test_split(diff_patches_np, labels_np, test_size=0.2, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
 
-# def print_class_distribution(y, dataset_name):
-#   unique, counts = np.unique(y, return_counts=True)
-#   print(f"{dataset_name} class distribution: {dict(zip(unique, counts))}")
+def print_class_distribution(y, dataset_name):
+  unique, counts = np.unique(y, return_counts=True)
+  print(f"{dataset_name} class distribution: {dict(zip(unique, counts))}")
 
-# print_class_distribution(y_train, "Training")
-# print_class_distribution(y_val, "Validation")
-# print_class_distribution(y_test, "Test")
+print_class_distribution(y_train, "Training")
+print_class_distribution(y_val, "Validation")
+print_class_distribution(y_test, "Test")
 
-# class_weights = class_weight.compute_class_weight( class_weight='balanced', classes=np.unique(y_train), y=y_train )
+class_weights = class_weight.compute_class_weight( class_weight='balanced', classes=np.unique(y_train), y=y_train )
 
-# class_weight_dict = dict(enumerate(class_weights))
-# print(f"Class Weights: {class_weight_dict}")
-
-
-# class_weight_ratio = { 0: 0.594434556407448,  1: 3.1473359913011962 }
-# a=class_weight_dict[1]
-# print(f"Class Weights ratio: {a}")
-# class_weight_ratio = 3.14
+class_weight_dict = dict(enumerate(class_weights))
+print(f"Class Weights: {class_weight_dict}")
 
 
-# early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
-# checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model2.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
-# reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
+class_weight_ratio = { 0: 0.594434556407448,  1: 3.1473359913011962 }
+a=class_weight_dict[1]
+print(f"Class Weights ratio: {a}")
+class_weight_ratio = 3.14
 
 
-# model = create_cnn_model(input_shape=(224, 224, 2))
-
-# initial_learning_rate = 2e-05
-# lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
-# opt = Adam(learning_rate=lr_schedule)
-
-# model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
-# wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val), callbacks=[checkpoint, reduce_lr, early_stopping])
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
+checkpoint = ModelCheckpoint('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model2.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, min_lr=1e-6, verbose=1)
 
 
-# model = load_model('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5',custom_objects={'combined_loss': combined_loss})
+model = create_cnn_model(input_shape=(224, 224, 2))
+
+initial_learning_rate = 2e-05
+lr_schedule = ExponentialDecay(initial_learning_rate, decay_steps=100000, decay_rate=0.96, staircase=True)
+opt = Adam(learning_rate=lr_schedule)
+
+model.compile(optimizer=opt, loss=combined_loss, metrics=['accuracy'])
+wcw_history = model.fit(X_train, y_train, epochs=100, class_weight=class_weight_dict, validation_data=(X_val, y_val), callbacks=[checkpoint, reduce_lr, early_stopping])
 
 
-# test_loss, test_acc = model.evaluate(X_test, y_test)
-# print(f"Test Accuracy: {test_acc}, Test Loss: {test_loss}")
-
-# y_pred_prob = model.predict(X_test) 
-# y_pred = np.where(y_pred_prob > 0.5, 1, 0)
+model = load_model('/ghosting-artifact-metric/Code/WACV/HighFreq/New_Model.h5',custom_objects={'combined_loss': combined_loss})
 
 
-# conf_matrix = confusion_matrix(y_test, y_pred)
-# TN, FP, FN, TP = conf_matrix.ravel()
-# accuracy_0 = TN / (TN + FP) * 100
-# accuracy_1 = TP / (TP + FN) * 100
-# print(f"Non-Ghosting Accuracy: {accuracy_0}")
-# print(f"Ghosting Accuracy: {accuracy_1}")
+test_loss, test_acc = model.evaluate(X_test, y_test)
+print(f"Test Accuracy: {test_acc}, Test Loss: {test_loss}")
+
+y_pred_prob = model.predict(X_test) 
+y_pred = np.where(y_pred_prob > 0.5, 1, 0)
 
 
-# class_report = classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"], output_dict=True)
-# print("Classification Report:")
-# print(classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"]))
+conf_matrix = confusion_matrix(y_test, y_pred)
+TN, FP, FN, TP = conf_matrix.ravel()
+accuracy_0 = TN / (TN + FP) * 100
+accuracy_1 = TP / (TP + FN) * 100
+print(f"Non-Ghosting Accuracy: {accuracy_0}")
+print(f"Ghosting Accuracy: {accuracy_1}")
+
+
+class_report = classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"], output_dict=True)
+print("Classification Report:")
+print(classification_report(y_test, y_pred, target_names=["Non-Ghosting", "Ghosting"]))
